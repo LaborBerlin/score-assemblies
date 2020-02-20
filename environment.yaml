@@ -1,4 +1,4 @@
-name: pomoxis-snake
+name: score-assemblies
 channels:
   - conda-forge
   - bioconda
@@ -6,6 +6,7 @@ channels:
   - anaconda
 dependencies:
   - bioconda::pomoxis=0.3.2
+  - bioconda::busco=4.0.2
   - bioconda::snakemake
   - conda-forge::r-tidyverse
   - conda-forge::r-base

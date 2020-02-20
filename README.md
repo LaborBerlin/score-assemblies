@@ -16,7 +16,7 @@ and activate environment:
 source activate score-assemblies
 ```
 
-### Usage
+## Usage
 First, prepare a data folder, which must contain subfolders for the assemblies and the reference genomes.
 ```
 .
@@ -35,11 +35,22 @@ Run workflow, e.g. with 20 allocated threads:
 snakemake -s /opt/software/score-assemblies/Snakefile --cores 20
 ```
 
-Each assembly will be scored against each reference genome.
 
-Currently, score-assemblies will run the the scripts `assess_assembly` and `assess_homopolymers` from [pomoxis](https://github.com/nanoporetech/pomoxis) for each combination of assembly and reference.
+### Modules
+Currently, score-assemblies will run these sub-modules:
 
+#### [pomoxis](https://github.com/nanoporetech/pomoxis) assess_assembly and assess_homopolymers
+
+Each assembly will be scored against each reference genome using these two scripts.  
 Additionally to the tables and plots from pomoxis, summary plots for each reference genome will be created in the plots folder.
 
+#### busco
+
+Set the lineage via the snakemake call:
+```
+snakemake -s /opt/software/score-assemblies/Snakefile --cores 20 --config busco_lineage=burkholderiales
+```
+If not set, the default lineage `bacteria` will be used.
+Available datasets can be listed with `busco --list-datasets`
 
 

@@ -1,5 +1,7 @@
 shell.executable("/bin/bash")
 
+busco_lineage = config.get('busco_lineage', 'bacteria')
+
 assemblies, = glob_wildcards("assemblies/{id}.fa")
 references, = glob_wildcards("references/{id}.fa")
 
@@ -8,6 +10,8 @@ list_assess_assembly_meanQ = expand("{id}/assess_assembly/{id}_{ref}_meanQ.tsv",
 list_assess_homopolymers_rel_len = expand("{id}/assess_homopolymers/{id}_{ref}_rel_len.tsv", id=assemblies, ref=references)
 list_assess_homopolymers_correct_len = expand("{id}/assess_homopolymers/{id}_{ref}_correct_len.tsv", id=assemblies, ref=references)
 list_assess_homopolymers_correct_len_pdf = expand("plots/{ref}_assess_homopolymers_all_correct_len.pdf", ref=references)
+
+list_busco_out = expand("{id}/busco/short_summary.specific.{blin}_odb10.busco.txt", id=assemblies, blin=busco_lineage)
 
 rule all:
 	input:
@@ -19,7 +23,8 @@ rule all:
 		"stats/assess_assembly_all_meanQ.tsv",
 		"stats/assess_homopolymers_all_rel_len.tsv",
 		"stats/assess_homopolymers_all_correct_len.tsv",
-		list_assess_homopolymers_correct_len_pdf
+		list_assess_homopolymers_correct_len_pdf,
+		list_busco_out
 
 rule assess_assembly:
 	input:
@@ -96,3 +101,14 @@ rule plot:
 		all_correct_len_pdfs = list_assess_homopolymers_correct_len_pdf
 	script: "scripts/plot.R"
 
+rule busco:
+	threads: 5
+	input:
+		assembly = "assemblies/{id}.fa"
+	output:
+		"{id}/busco/short_summary.specific.{busco_lineage}_odb10.busco.txt"
+	log: "{id}/busco/busco_{busco_lineage}.log"
+	shell:
+		"""
+		cd {wildcards.id} && busco -c {threads} -f -m genome -l {busco_lineage} -o busco -i ../{input} >../{log} 2>&1
+		"""
