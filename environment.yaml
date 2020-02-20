@@ -1,0 +1,11 @@
+name: pomoxis-snake
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+  - anaconda
+dependencies:
+  - bioconda::pomoxis=0.3.2
+  - bioconda::snakemake
+  - conda-forge::r-tidyverse
+  - conda-forge::r-base
