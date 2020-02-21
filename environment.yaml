@@ -10,6 +10,8 @@ dependencies:
   - bioconda::snakemake=5.10.0
   - bioconda::quast=5.0.2
   - bioconda::mummer=3.23
+  - bioconda::diamond=0.9.30
+  - bioconda::prodigal=2.6.3
   - conda-forge::r-tidyverse
   - conda-forge::r-base
   - conda-forge::r-tidytext

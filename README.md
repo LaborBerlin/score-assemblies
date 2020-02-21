@@ -7,6 +7,7 @@ The workflow includes the following programs:
 * dnadiff from the [mummer](https://mummer4.github.io/index.html) package
 * [QUAST](http://quast.sourceforge.net/quast)
 * [BUSCO](https://busco.ezlab.org/)
+* [ideel](https://github.com/mw55309/ideel/)
 
 ## Installation
 Clone repository, for example:
@@ -23,7 +24,8 @@ source activate score-assemblies
 ```
 
 ## Usage
-First, prepare a data folder, which must contain subfolders for the assemblies and the reference genomes.
+First, prepare a data folder, which must contain subfolders for the assemblies
+and the reference genomes.
 ```
 .
 ├── assemblies
@@ -36,9 +38,9 @@ First, prepare a data folder, which must contain subfolders for the assemblies a
     └── reference2.fa
 ```
 
-Run workflow, e.g. with 20 allocated threads:
+Run workflow, e.g. with 20 threads:
 ```
-snakemake -s /opt/software/score-assemblies/Snakefile --cores 20
+snakemake -k -s /opt/software/score-assemblies/Snakefile --cores 20
 ```
 
 ### Modules
@@ -46,14 +48,18 @@ score-assemblies will run these programs on each assembly:
 
 #### assess_assembly and assess_homopolymers
 
-Each assembly will be scored against each reference genome using the `assess_assembly` and `assess_homopolymers` scripts from [pomoxis](https://github.com/nanoporetech/pomoxis).
-Additionally to the tables and plots from pomoxis, summary plots for each reference genome will be plotted in the files `<reference>_assess_assembly_all_meanQ.pdf` and `<reference>_assess_homopolymers_all_correct_len.pdf`.
+Each assembly will be scored against each reference genome using the
+`assess_assembly` and `assess_homopolymers` scripts from
+[pomoxis](https://github.com/nanoporetech/pomoxis).  Additionally to the tables
+and plots from pomoxis, summary plots for each reference genome will be plotted
+in the files `<reference>_assess_assembly_all_meanQ.pdf` and
+`<reference>_assess_homopolymers_all_correct_len.pdf`.
 
 #### BUSCO
 
 Set the lineage via the snakemake call:
 ```
-snakemake -s /opt/software/score-assemblies/Snakefile --cores 20 --config busco_lineage=burkholderiales
+snakemake -k -s /opt/software/score-assemblies/Snakefile --cores 20 --config busco_lineage=burkholderiales
 ```
 If not set, the default lineage `bacteria` will be used.
 Available datasets can be listed with `busco --list-datasets`
@@ -62,11 +68,21 @@ The number of complete, fragmented and missing BUSCOs per assembly is plotted in
 
 
 #### dnadiff
-Each assembly is compared with each reference and the output files will be located in `dnadiff/<reference>/<assembly>-dnadiff.report`.
-The values for `AvgIdentity` and `TotalIndels` are extracted from these files and are plotted for each reference in the files `dnadiff/<reference>_dnadiff_stats.pdf`.
+Each assembly is compared with each reference and the output files will be
+located in `dnadiff/<reference>/<assembly>-dnadiff.report`.  The values for
+`AvgIdentity` and `TotalIndels` are extracted from these files and are plotted
+for each reference in the files `dnadiff/<reference>_dnadiff_stats.pdf`.
 
 #### QUAST
 
 One QUAST report is generated for each reference genome, containing the results for all assemblies.
 The report files are located in `quast/<reference>/report.html`.
+
+#### ideel
+
+Open reading frames are predicted from each assembly via Prodigal and are
+search in the Uniprot sprot database with diamond, retaining the best alignment
+for each ORF. For each assembly, the distribution of the ratios between length
+of the ORF and the matching database sequence are plotted to the file
+`ideel/ideel_stats.pdf`.
 

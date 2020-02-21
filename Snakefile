@@ -21,6 +21,9 @@ list_dnadiff_report = expand("dnadiff/{ref}/{id}-dnadiff.report", id=assemblies,
 list_dnadiff_tsv = expand("dnadiff/{ref}/{id}-dnadiff-stats.tsv", id=assemblies, ref=references)
 list_dnadiff_pdf = expand("dnadiff/{ref}_dnadiff_stats.pdf", ref=references)
 
+list_prodigal_proteins = expand("ideel/prodigal/{id}.faa", id=assemblies)
+list_diamond_output = expand("ideel/diamond/{id}.tsv", id=assemblies)
+
 rule all:
 	input:
 		list_assess_assembly_summ,
@@ -40,7 +43,16 @@ rule all:
 		list_dnadiff_report,
 		list_dnadiff_tsv,
 		"dnadiff/all_stats.tsv",
-		list_dnadiff_pdf
+		list_dnadiff_pdf,
+		"ideel/uniprot/uniprot_sprot.fasta.gz",
+		"ideel/uniprot/uniprot_sprot.dmnd",
+		list_prodigal_proteins,
+		list_diamond_output,
+		"ideel/ideel_stats.pdf"
+
+# -------------------------------------------------------------------------------------------------------------------------------------------
+# pomoxis
+# -------------------------------------------------------------------------------------------------------------------------------------------
 
 rule assess_assembly:
 	input:
@@ -109,6 +121,9 @@ rule gather_stats_pomoxis:
 		cat {input.hp_correct_len}  > {output.all_hp_correct_len}
 		"""
 
+# -------------------------------------------------------------------------------------------------------------------------------------------
+# BUSCO
+# -------------------------------------------------------------------------------------------------------------------------------------------
 
 rule busco:
 	threads: 5
@@ -143,6 +158,10 @@ rule gather_stats_busco:
 		cat {input} > {output}
 		"""
 
+# -------------------------------------------------------------------------------------------------------------------------------------------
+# QUAST
+# -------------------------------------------------------------------------------------------------------------------------------------------
+
 rule quast:
 	threads: 2
 	input:
@@ -154,6 +173,10 @@ rule quast:
 		"""
 		quast -t {threads} --glimmer -o quast/{wildcards.ref} -r {input.reference} assemblies/*.fa >{log} 2>&1
 		"""
+
+# -------------------------------------------------------------------------------------------------------------------------------------------
+# dnadiff
+# -------------------------------------------------------------------------------------------------------------------------------------------
 
 rule dnadiff:
 	threads: 1
@@ -180,15 +203,67 @@ rule gather_stats_dnadiff:
 		cat {input} > {output}
 		"""
 
+# -------------------------------------------------------------------------------------------------------------------------------------------
+# ideel
+# -------------------------------------------------------------------------------------------------------------------------------------------
+
+rule download_uniprot:
+	priority: 10
+	output:
+		"ideel/uniprot/uniprot_sprot.fasta.gz"
+	log: "ideel/uniprot/download.log"
+	shell:
+		"""
+		wget -P ideel/uniprot ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz >{log} 2>&1
+		"""
+
+rule diamond_makedb:
+	input:
+		"ideel/uniprot/uniprot_sprot.fasta.gz"
+	output:
+		"ideel/uniprot/uniprot_sprot.dmnd"
+	log: "ideel/uniprot/diamond-makedb.log"
+	shell:
+		"""
+		diamond makedb --db ideel/uniprot/uniprot_sprot --in ideel/uniprot/uniprot_sprot.fasta.gz >{log} 2>&1
+		"""
+
+rule prodigal:
+	input: "assemblies/{id}.fa"
+	output: "ideel/prodigal/{id}.faa"
+	log: "ideel/prodigal/{id}.log"
+	shell:
+		"""
+		prodigal -a {output} -i {input} >{log} 2>&1
+		"""
+
+rule diamond:
+  threads: 5
+	input:
+		proteins = "ideel/prodigal/{id}.faa",
+		db = "ideel/uniprot/uniprot_sprot.dmnd"
+	output: "ideel/diamond/{id}.tsv"
+	log: "ideel/diamond/{id}.log"
+	shell:
+		"""
+		diamond blastp --threads {threads} --max-target-seqs 1 --db {input.db} --query {input.proteins} --outfmt 6 qlen slen --out {output} >{log} 2>&1
+		"""
+
+# -------------------------------------------------------------------------------------------------------------------------------------------
+# plots
+# -------------------------------------------------------------------------------------------------------------------------------------------
 
 rule plot:
 	input:
 		"pomoxis/assess_assembly_all_meanQ.tsv",
 		"pomoxis/assess_homopolymers_all_correct_len.tsv",
 		"busco/all_stats.tsv",
-		"dnadiff/all_stats.tsv"
+		"dnadiff/all_stats.tsv",
+		list_diamond_output
 	output:
 		list_assess_homopolymers_correct_len_pdf,
 		list_dnadiff_pdf,
-		"busco/busco_stats.pdf"
+		"busco/busco_stats.pdf",
+		"ideel/ideel_stats.pdf"
 	script: "scripts/plot.R"
+
