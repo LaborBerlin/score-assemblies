@@ -1,10 +1,10 @@
 # score-assemblies
 
-A snakemake-wrapper for evaluating **de novo** bacterial genome assemblies, e.g. from Oxford Nanopore (ONT) sequencing.
+A snakemake-wrapper for evaluating *de novo* bacterial genome assemblies, e.g. from Oxford Nanopore (ONT) or Illumina sequencing.
 
 The workflow includes the following programs:
 * [pomoxis](https://github.com/nanoporetech/pomoxis) assess_assembly and assess_homopolymers
-* dnadiff from the mummer package
+* dnadiff from the [mummer](https://mummer4.github.io/index.html) package
 * [QUAST](http://quast.sourceforge.net/quast)
 * [BUSCO](https://busco.ezlab.org/)
 
