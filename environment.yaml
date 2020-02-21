@@ -7,6 +7,9 @@ channels:
 dependencies:
   - bioconda::pomoxis=0.3.2
   - bioconda::busco=4.0.2
-  - bioconda::snakemake
+  - bioconda::snakemake=5.10.0
+  - bioconda::quast=5.0.2
+  - bioconda::mummer=3.23
   - conda-forge::r-tidyverse
   - conda-forge::r-base
+  - conda-forge::r-tidytext
