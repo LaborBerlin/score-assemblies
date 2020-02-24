@@ -7,7 +7,9 @@ assemblies, = glob_wildcards("assemblies/{id}.fa")
 references, = glob_wildcards("references/{id}.fa")
 
 list_assess_assembly_summ = expand("pomoxis/{id}/assess_assembly/{id}_{ref}_summ.txt", id=assemblies, ref=references)
-list_assess_assembly_meanQ = expand("pomoxis/{id}/assess_assembly/{id}_{ref}_meanQ.tsv", id=assemblies, ref=references)
+list_assess_assembly_meanQ_tsv = expand("pomoxis/{id}/assess_assembly/{id}_{ref}_meanQ.tsv", id=assemblies, ref=references)
+list_assess_assembly_meanQ_pdf = expand("pomoxis/{ref}_assess_assembly_all_meanQ.pdf", ref=references)
+
 list_assess_homopolymers_rel_len = expand("pomoxis/{id}/assess_homopolymers/{id}_{ref}_rel_len.tsv", id=assemblies, ref=references)
 list_assess_homopolymers_correct_len = expand("pomoxis/{id}/assess_homopolymers/{id}_{ref}_correct_len.tsv", id=assemblies, ref=references)
 list_assess_homopolymers_correct_len_pdf = expand("pomoxis/{ref}_assess_homopolymers_all_correct_len.pdf", ref=references)
@@ -26,12 +28,13 @@ list_diamond_output = expand("ideel/diamond/{id}.tsv", id=assemblies)
 
 rule all:
 	input:
+		"pomoxis/assess_assembly_all_meanQ.tsv",
 		list_assess_assembly_summ,
-		list_assess_assembly_meanQ,
+		list_assess_assembly_meanQ_tsv,
+		list_assess_assembly_meanQ_pdf,
 		expand("pomoxis/{id}/assess_homopolymers/{id}_{ref}.bam", id=assemblies, ref=references),
 		expand("pomoxis/{id}/assess_homopolymers/{id}_{ref}_analyse/hp_rel_len_counts.txt", id=assemblies, ref=references),
 		list_assess_homopolymers_rel_len,
-		"pomoxis/assess_assembly_all_meanQ.tsv",
 		"pomoxis/assess_homopolymers_all_rel_len.tsv",
 		"pomoxis/assess_homopolymers_all_correct_len.tsv",
 		list_assess_homopolymers_correct_len_pdf,
@@ -105,7 +108,7 @@ rule assess_homopolymers:
 
 rule gather_stats_pomoxis:
 	input:
-		aa_meanQ = list_assess_assembly_meanQ,
+		aa_meanQ = list_assess_assembly_meanQ_tsv,
 		hp_rel_len = list_assess_homopolymers_rel_len,
 		hp_correct_len = list_assess_homopolymers_correct_len,
 	output:
@@ -253,17 +256,38 @@ rule diamond:
 # plots
 # -------------------------------------------------------------------------------------------------------------------------------------------
 
-rule plot:
+rule plot_assess_assembly:
 	input:
-		"pomoxis/assess_assembly_all_meanQ.tsv",
-		"pomoxis/assess_homopolymers_all_correct_len.tsv",
-		"busco/all_stats.tsv",
-		"dnadiff/all_stats.tsv",
-		list_diamond_output
+		"pomoxis/assess_assembly_all_meanQ.tsv"
+	output:
+		list_assess_assembly_meanQ_pdf
+	script: "scripts/plot-assess_assembly.R"
+
+rule plot_asses_homopolymers:
+	input:
+		"pomoxis/assess_homopolymers_all_correct_len.tsv"
 	output:
 		list_assess_homopolymers_correct_len_pdf,
-		list_dnadiff_pdf,
+	script: "scripts/plot-assess_homopolymers.R"
+
+rule plot_busco:
+	input:
+		"busco/all_stats.tsv"
+	output:
 		"busco/busco_stats.pdf",
+	script: "scripts/plot-busco.R"
+
+rule plot_dnadiff:
+	input:
+		"dnadiff/all_stats.tsv"
+	output:
+		list_dnadiff_pdf,
+	script: "scripts/plot-dnadiff.R"
+
+rule plot_ideel:
+	input:
+		list_diamond_output
+	output:
 		"ideel/ideel_stats.pdf"
-	script: "scripts/plot.R"
+	script: "scripts/plot-ideel.R"
 
