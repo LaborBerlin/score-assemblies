@@ -3,8 +3,12 @@ shell.executable("/bin/bash")
 
 busco_lineage = config.get('busco_lineage', 'bacteria')
 
-assemblies, = glob_wildcards("assemblies/{id}.fa")
-references, = glob_wildcards("references/{id}.fa")
+wildcard_constraints:
+  id = "[^/\\\\]+",
+  ref = "[^/\\\\]+"
+
+assemblies, = glob_wildcards("assemblies/{id,[^/\\\\]+}.fa")
+references, = glob_wildcards("references/{ref,[^/\\\\]+}.fa")
 
 list_assess_assembly_summ = expand("pomoxis/{id}/assess_assembly/{id}_{ref}_summ.txt", id=assemblies, ref=references)
 list_assess_assembly_meanQ_tsv = expand("pomoxis/{id}/assess_assembly/{id}_{ref}_meanQ.tsv", id=assemblies, ref=references)
@@ -68,7 +72,7 @@ rule assess_assembly:
 	shell:
 		"""
 		assess_assembly -r {input.ref} -i {input.assembly} -p pomoxis/{wildcards.id}/assess_assembly/{wildcards.id}_{wildcards.ref} >{log} 2>&1
-		meanQ=$(grep -A2 "{wildcards.ref} Q" {output.summ} | tail -n1 | awk '{{print $2}}')
+		meanQ=$(grep -A2 '#  Q Scores' {output.summ} | tail -n1 | awk '{{print $2}}')
 		echo "{wildcards.id}\t{wildcards.ref}\t$meanQ" > {output.meanQ}
 		"""
 
@@ -110,11 +114,11 @@ rule gather_stats_pomoxis:
 	input:
 		aa_meanQ = list_assess_assembly_meanQ_tsv,
 		hp_rel_len = list_assess_homopolymers_rel_len,
-		hp_correct_len = list_assess_homopolymers_correct_len,
+		hp_correct_len = list_assess_homopolymers_correct_len
 	output:
 		all_aa_meanQ = "pomoxis/assess_assembly_all_meanQ.tsv",
 		all_hp_rel_len = "pomoxis/assess_homopolymers_all_rel_len.tsv",
-		all_hp_correct_len = "pomoxis/assess_homopolymers_all_correct_len.tsv",
+		all_hp_correct_len = "pomoxis/assess_homopolymers_all_correct_len.tsv"
 	shell:
 		"""
 		#filter inf values, which happen when comparing identical assemblies
@@ -193,7 +197,8 @@ rule dnadiff:
 	shell:
 		"""
 		dnadiff -p dnadiff/{wildcards.ref}/{wildcards.id}-dnadiff {input.reference} {input.assembly} >{log} 2>&1
-		grep -E 'AvgIdentity|TotalIndels' {output.dnadiff_report}| uniq | sed -e 's/^/{wildcards.id}\t{wildcards.ref}\t/' | perl -lpne 's/\s+/\t/g' > {output.stats_tsv}
+		cat {output.dnadiff_report} | grep -A3 '1-to-1' | grep 'AvgIdentity' | sed -e 's/^/{wildcards.id}\t{wildcards.ref}\t/' | perl -lpne 's/\s+/\t/g' > {output.stats_tsv}
+		grep TotalIndels {output.dnadiff_report} | sed -e 's/^/{wildcards.id}\t{wildcards.ref}\t/' | perl -lpne 's/\s+/\t/g' >> {output.stats_tsv}
 		"""
 
 rule gather_stats_dnadiff:

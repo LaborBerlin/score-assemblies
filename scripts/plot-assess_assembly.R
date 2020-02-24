@@ -18,7 +18,7 @@ for (i_ref in unique(df$reference)) {
     geom_point(shape = 21, size = 3, fill = "deepskyblue3") +
     theme_bw() +
     theme(legend.position = "bottom") +
-    ggtitle(paste("Mean Q-scores, reference", i_ref)) +
+    labs(title = "Q-scores mean", subtitle = paste("Reference:", i_ref), caption = "from pomoxis/assess_assemblies output files *_summ.txt") +
     ylab("") +
     xlab("") +
     theme(
@@ -29,4 +29,3 @@ for (i_ref in unique(df$reference)) {
   writeLines(paste("Saving plot to", filename_out))
   ggsave(p, filename = filename_out)
 }
-

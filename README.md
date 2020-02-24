@@ -52,7 +52,7 @@ Each assembly will be scored against each reference genome using the
 `assess_assembly` and `assess_homopolymers` scripts from
 [pomoxis](https://github.com/nanoporetech/pomoxis).  Additionally to the tables
 and plots from pomoxis, summary plots for each reference genome will be plotted
-in the files `<reference>_assess_assembly_all_meanQ.pdf` and
+in `<reference>_assess_assembly_all_meanQ.pdf` and
 `<reference>_assess_homopolymers_all_correct_len.pdf`.
 
 #### BUSCO
@@ -64,14 +64,14 @@ snakemake -k -s /opt/software/score-assemblies/Snakefile --cores 20 --config bus
 If not set, the default lineage `bacteria` will be used.
 Available datasets can be listed with `busco --list-datasets`
 
-The number of complete, fragmented and missing BUSCOs per assembly is plotted in the file `busco/busco_stats.pdf`.
+The number of complete, fragmented and missing BUSCOs per assembly is plotted in `busco/busco_stats.pdf`.
 
 
 #### dnadiff
 Each assembly is compared with each reference and the output files will be
 located in `dnadiff/<reference>/<assembly>-dnadiff.report`.  The values for
-`AvgIdentity` and `TotalIndels` are extracted from these files and are plotted
-for each reference in the files `dnadiff/<reference>_dnadiff_stats.pdf`.
+`AvgIdentity` (from 1-to-1 alignments) and `TotalIndels` are extracted from these files and are plotted
+for each reference in `dnadiff/<reference>_dnadiff_stats.pdf`.
 
 #### QUAST
 
@@ -83,6 +83,5 @@ The report files are located in `quast/<reference>/report.html`.
 Open reading frames are predicted from each assembly via Prodigal and are
 search in the Uniprot sprot database with diamond, retaining the best alignment
 for each ORF. For each assembly, the distribution of the ratios between length
-of the ORF and the matching database sequence are plotted to the file
-`ideel/ideel_stats.pdf`.
+of the ORF and the matching database sequence are plotted to `ideel/ideel_stats.pdf`.
 
