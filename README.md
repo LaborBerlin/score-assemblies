@@ -66,7 +66,7 @@ in `pomoxis/<reference>_assess_assembly_all_meanQ.pdf` and
 
 Set the lineage via the snakemake call:
 ```
-snakemake -k -s /opt/software/score-assemblies/Snakefile --cores 20 --config busco_lineage=burkholderiales
+snakemake -s /opt/software/score-assemblies/Snakefile --cores 20 --config busco_lineage=bacillales
 ```
 If not set, the default lineage `bacteria` will be used.
 Available datasets can be listed with `busco --list-datasets`
