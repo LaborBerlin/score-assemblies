@@ -11,7 +11,7 @@ df <- read_tsv(filename_assess_homopolymers_all_correct_len_tsv,
 ) %>%
   select(-ends_with("_n")) %>%
   gather(key = "base", value = "frac_correct", -assembly, -reference, -rlen)
-df
+
 for (i_ref in unique(df$reference)) {
   p <- df %>%
     filter(reference == i_ref) %>%
