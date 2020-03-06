@@ -30,7 +30,8 @@ p <- ggplot(df.all, aes(x = SCov)) +
   ylab("") + xlab("qlen / slen") +
   xlim(0, 1.5) +
   scale_color_discrete(guide = FALSE) +
-  scale_fill_discrete(guide = FALSE)
+  scale_fill_discrete(guide = FALSE) +
+  theme(strip.text.x = element_text(size = 6))
 
 filename_out <- filename_ideel_pdf
 writeLines(paste("Saving plot to", filename_out))

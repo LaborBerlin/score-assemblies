@@ -44,6 +44,8 @@ Run workflow in that folder, e.g. with 20 threads:
 snakemake -k -s /opt/software/score-assemblies/Snakefile --cores 20
 ```
 
+If no references are supplied, then only ideel and BUSCO are done.
+
 ### Modules
 score-assemblies will run these programs on each assembly:
 

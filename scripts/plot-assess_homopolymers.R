@@ -29,7 +29,7 @@ for (i_ref in unique(df$reference)) {
     theme(
       strip.background = element_rect(fill = "grey90")
     ) +
-    scale_color_discrete(guide = guide_legend(title = "", ncol = 3))
+    scale_color_discrete(guide = guide_legend(title = "", ncol = 2))
 
   filename_out <- paste0("pomoxis/", i_ref, "_", filename_assess_homopolymers_all_correct_len_pdf)
   writeLines(paste("Saving plot to", filename_out))
