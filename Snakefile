@@ -1,6 +1,8 @@
 from glob import glob
 shell.executable("/bin/bash")
 
+workflow.global_resources['wget_busco'] = 1
+
 busco_lineage = config.get('busco_lineage', 'bacteria')
 
 wildcard_constraints:
@@ -10,46 +12,55 @@ wildcard_constraints:
 assemblies, = glob_wildcards("assemblies/{id,[^/\\\\]+}.fa")
 references, = glob_wildcards("references/{ref,[^/\\\\]+}.fa")
 
-list_assess_assembly_summ = expand("pomoxis/{id}/assess_assembly/{id}_{ref}_summ.txt", id=assemblies, ref=references)
-list_assess_assembly_meanQ_tsv = expand("pomoxis/{id}/assess_assembly/{id}_{ref}_meanQ.tsv", id=assemblies, ref=references)
-list_assess_assembly_meanQ_pdf = expand("pomoxis/{ref}_assess_assembly_all_meanQ.pdf", ref=references)
-
-list_assess_homopolymers_rel_len = expand("pomoxis/{id}/assess_homopolymers/{id}_{ref}_rel_len.tsv", id=assemblies, ref=references)
-list_assess_homopolymers_correct_len = expand("pomoxis/{id}/assess_homopolymers/{id}_{ref}_correct_len.tsv", id=assemblies, ref=references)
-list_assess_homopolymers_correct_len_pdf = expand("pomoxis/{ref}_assess_homopolymers_all_correct_len.pdf", ref=references)
+list_assess_assembly_summ = []
+list_assess_assembly_meanQ_tsv = []
+list_assess_assembly_meanQ_pdf = []
+list_assess_homopolymers_rel_len = []
+list_assess_homopolymers_correct_len_tsv = []
+list_assess_homopolymers_correct_len_pdf = []
+list_pomoxis = []
+list_quast_report = []
+list_dnadiff_report = []
+list_dnadiff = []
+list_dnadiff_tsv = []
+list_dnadiff_pdf = []
+if len(references) > 0:
+	list_assess_assembly_summ = expand("pomoxis/{id}/assess_assembly/{id}_{ref}_summ.txt", id=assemblies, ref=references)
+	list_assess_assembly_meanQ_tsv = expand("pomoxis/{id}/assess_assembly/{id}_{ref}_meanQ.tsv", id=assemblies, ref=references)
+	list_assess_assembly_meanQ_pdf = expand("pomoxis/{ref}_assess_assembly_all_meanQ.pdf", ref=references)
+	list_assess_homopolymers_rel_len = expand("pomoxis/{id}/assess_homopolymers/{id}_{ref}_rel_len.tsv", id=assemblies, ref=references)
+	list_assess_homopolymers_correct_len_tsv = expand("pomoxis/{id}/assess_homopolymers/{id}_{ref}_correct_len.tsv", id=assemblies, ref=references)
+	list_assess_homopolymers_correct_len_pdf = expand("pomoxis/{ref}_assess_homopolymers_all_correct_len.pdf", ref=references)
+	list_pomoxis = ["pomoxis/assess_assembly_all_meanQ.tsv", "pomoxis/assess_homopolymers_all_rel_len.tsv", "pomoxis/assess_homopolymers_all_correct_len.tsv" ]
+	list_quast_report = expand("quast/{ref}/report.html", ref=references)
+	list_dnadiff_report = expand("dnadiff/{ref}/{id}-dnadiff.report", id=assemblies, ref=references)
+	list_dnadiff = [ "dnadiff/all_stats.tsv" ]
+	list_dnadiff_tsv = expand("dnadiff/{ref}/{id}-dnadiff-stats.tsv", id=assemblies, ref=references)
+	list_dnadiff_pdf = expand("dnadiff/{ref}_dnadiff_stats.pdf", ref=references)
 
 list_busco_out = expand("busco/{id}/short_summary.specific.{blin}_odb10.{id}.txt", id=assemblies, blin=busco_lineage)
 list_busco_tsv = expand("busco/{id}/short_summary.specific.{blin}_odb10.{id}.tsv", id=assemblies, blin=busco_lineage)
-
-list_quast_report = expand("quast/{ref}/report.html", ref=references)
-
-list_dnadiff_report = expand("dnadiff/{ref}/{id}-dnadiff.report", id=assemblies, ref=references)
-list_dnadiff_tsv = expand("dnadiff/{ref}/{id}-dnadiff-stats.tsv", id=assemblies, ref=references)
-list_dnadiff_pdf = expand("dnadiff/{ref}_dnadiff_stats.pdf", ref=references)
 
 list_prodigal_proteins = expand("ideel/prodigal/{id}.faa", id=assemblies)
 list_diamond_output = expand("ideel/diamond/{id}.tsv", id=assemblies)
 
 rule all:
 	input:
-		"pomoxis/assess_assembly_all_meanQ.tsv",
 		list_assess_assembly_summ,
 		list_assess_assembly_meanQ_tsv,
 		list_assess_assembly_meanQ_pdf,
-		expand("pomoxis/{id}/assess_homopolymers/{id}_{ref}.bam", id=assemblies, ref=references),
-		expand("pomoxis/{id}/assess_homopolymers/{id}_{ref}_analyse/hp_rel_len_counts.txt", id=assemblies, ref=references),
 		list_assess_homopolymers_rel_len,
-		"pomoxis/assess_homopolymers_all_rel_len.tsv",
-		"pomoxis/assess_homopolymers_all_correct_len.tsv",
+		list_assess_homopolymers_correct_len_tsv,
 		list_assess_homopolymers_correct_len_pdf,
+		list_pomoxis,
 		list_busco_out,
 		list_busco_tsv,
 		"busco/all_stats.tsv",
 		"busco/busco_stats.pdf",
 		list_quast_report,
 		list_dnadiff_report,
+		list_dnadiff,
 		list_dnadiff_tsv,
-		"dnadiff/all_stats.tsv",
 		list_dnadiff_pdf,
 		"ideel/uniprot/uniprot_sprot.fasta.gz",
 		"ideel/uniprot/uniprot_sprot.dmnd",
@@ -114,7 +125,7 @@ rule gather_stats_pomoxis:
 	input:
 		aa_meanQ = list_assess_assembly_meanQ_tsv,
 		hp_rel_len = list_assess_homopolymers_rel_len,
-		hp_correct_len = list_assess_homopolymers_correct_len
+		hp_correct_len = list_assess_homopolymers_correct_len_tsv
 	output:
 		all_aa_meanQ = "pomoxis/assess_assembly_all_meanQ.tsv",
 		all_hp_rel_len = "pomoxis/assess_homopolymers_all_rel_len.tsv",
@@ -134,6 +145,7 @@ rule gather_stats_pomoxis:
 
 rule busco:
 	threads: 5
+	resources: wget_busco=1
 	input:
 		assembly = "assemblies/{id}.fa"
 	output:
