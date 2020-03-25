@@ -5,6 +5,7 @@ A snakemake-wrapper for evaluating *de novo* bacterial genome assemblies, e.g. f
 The workflow includes the following programs:
 * [pomoxis](https://github.com/nanoporetech/pomoxis) assess_assembly and assess_homopolymers
 * dnadiff from the [mummer](https://mummer4.github.io/index.html) package
+* [NucDiff](https://github.com/uio-cels/NucDiff/)
 * [QUAST](http://quast.sourceforge.net/quast)
 * [BUSCO](https://busco.ezlab.org/)
 * [ideel](https://github.com/mw55309/ideel/)
@@ -86,6 +87,13 @@ for each reference in `dnadiff/<reference>_dnadiff_stats.pdf`.
 
 ##### Example plot of dnadiff results
 ![Example dnadiff](example/example_dnadiff.png?raw=true)
+
+
+#### NucDiff
+Each assembly is compared with each reference and the output files will be
+located in the folder `nucdiff/<reference>/<assembly>-nucdiff/`.  The values for
+`Insertions`, `Deletions`, and `Substitutions` are extracted from the file `results/nucdiff_stat.out` and are plotted
+for each reference in `nucdiff/<reference>_nucdiff_stats.pdf`.
 
 #### QUAST
 
