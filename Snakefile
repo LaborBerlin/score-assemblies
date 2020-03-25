@@ -37,6 +37,10 @@ if len(references) > 0:
 	list_dnadiff = [ "dnadiff/all_stats.tsv" ]
 	list_dnadiff_tsv = expand("dnadiff/{ref}/{id}-dnadiff-stats.tsv", id=assemblies, ref=references)
 	list_dnadiff_pdf = expand("dnadiff/{ref}_dnadiff_stats.pdf", ref=references)
+	list_nucdiff_stat = expand("nucdiff/{ref}/{id}-nucdiff/results/nucdiff_stat.out", id=assemblies, ref=references)
+	list_nucdiff_tsv = expand("nucdiff/{ref}/{id}-nucdiff/nucdiff.tsv", id=assemblies, ref=references)
+	list_nucdiff = [ "nucdiff/all_stats.tsv" ]
+	list_nucdiff_pdf = expand("nucdiff/{ref}_nucdiff_stats.pdf", ref=references)
 
 list_busco_out = expand("busco/{id}/short_summary.specific.{blin}_odb10.{id}.txt", id=assemblies, blin=busco_lineage)
 list_busco_tsv = expand("busco/{id}/short_summary.specific.{blin}_odb10.{id}.tsv", id=assemblies, blin=busco_lineage)
@@ -62,6 +66,10 @@ rule all:
 		list_dnadiff,
 		list_dnadiff_tsv,
 		list_dnadiff_pdf,
+		list_nucdiff_stat,
+		list_nucdiff_tsv,
+		list_nucdiff,
+		list_nucdiff_pdf,
 		"ideel/uniprot/uniprot_sprot.fasta.gz",
 		"ideel/uniprot/uniprot_sprot.dmnd",
 		list_prodigal_proteins,
@@ -224,6 +232,38 @@ rule gather_stats_dnadiff:
 		"""
 
 # -------------------------------------------------------------------------------------------------------------------------------------------
+# nucdiff
+# -------------------------------------------------------------------------------------------------------------------------------------------
+
+rule nucdiff:
+	threads: 1
+	input:
+		reference = "references/{ref}.fa",
+		assembly = "assemblies/{id}.fa"
+	output:
+		nucdiff_stat = "nucdiff/{ref}/{id}-nucdiff/results/nucdiff_stat.out",
+		nucdiff_tsv = "nucdiff/{ref}/{id}-nucdiff/nucdiff.tsv"
+	params:
+		nucdiff_dir = directory("nucdiff/{ref}/{id}-nucdiff/")
+	log: "nucdiff/{ref}/{id}-nucdiff.log"
+	shell:
+		"""
+		nucdiff {input.reference} {input.assembly} {params.nucdiff_dir} nucdiff >{log} 2>&1
+		cat {output.nucdiff_stat} | grep 'Insertions\|Deletions\|Substitutions' | sed -e 's/^/{wildcards.id}\t{wildcards.ref}\t/' > {output.nucdiff_tsv}
+		"""
+
+rule gather_stats_nucdiff:
+	input:
+		all_reports = list_nucdiff_tsv
+	output:
+		all_nucdiff_tsv = "nucdiff/all_stats.tsv"
+	shell:
+		"""
+		cat {input} > {output}
+		"""
+
+
+# -------------------------------------------------------------------------------------------------------------------------------------------
 # ideel
 # -------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -300,6 +340,13 @@ rule plot_dnadiff:
 	output:
 		list_dnadiff_pdf,
 	script: "scripts/plot-dnadiff.R"
+
+rule plot_nucdiff:
+	input:
+		"nucdiff/all_stats.tsv"
+	output:
+		list_nucdiff_pdf
+	script: "scripts/plot-nucdiff.R"
 
 rule plot_ideel:
 	input:

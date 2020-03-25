@@ -12,6 +12,7 @@ dependencies:
   - bioconda::mummer=3.23
   - bioconda::diamond=0.9.30
   - bioconda::prodigal=2.6.3
+  - bioconda::nucdiff=2.0.2
   - conda-forge::r-tidyverse
   - conda-forge::r-base
   - conda-forge::r-tidytext
