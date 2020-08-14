@@ -24,6 +24,10 @@ list_dnadiff_report = []
 list_dnadiff = []
 list_dnadiff_tsv = []
 list_dnadiff_pdf = []
+list_nucdiff_stat = []
+list_nucdiff_tsv = []
+list_nucdiff = []
+list_nucdiff_pdf = []
 if len(references) > 0:
 	list_assess_assembly_summ = expand("pomoxis/{id}/assess_assembly/{id}_{ref}_summ.txt", id=assemblies, ref=references)
 	list_assess_assembly_meanQ_tsv = expand("pomoxis/{id}/assess_assembly/{id}_{ref}_meanQ.tsv", id=assemblies, ref=references)
@@ -161,7 +165,7 @@ rule busco:
 	log: "busco/{id}/busco_{busco_lineage}.log"
 	shell:
 		"""
-		cd busco && busco -c {threads} -f -m genome -l {busco_lineage} -o {wildcards.id} -i ../{input} >../{log} 2>&1
+		cd busco && busco -q -c {threads} -f -m genome -l {busco_lineage} -o {wildcards.id} -i ../{input} >../{log} 2>&1
 		"""
 
 rule busco2tsv:
