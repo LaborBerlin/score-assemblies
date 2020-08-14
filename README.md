@@ -15,18 +15,19 @@ Clone repository, for example:
 ```
 git clone https://github.com/pmenzel/score-assemblies.git /opt/software/score-assemblies
 ```
-Install dependencies into an isolated conda environment
+Create a new conda environment containing all necessary programs:
 ```
 conda env create -n score-assemblies --file /opt/software/score-assemblies/environment.yaml
 ```
-and activate environment:
+and activate the environment:
 ```
-source activate score-assemblies
+conda activate score-assemblies
 ```
 
 ## Usage
-First, prepare a data folder, which must contain subfolders for the assemblies
-and the reference genomes, for example:
+First, prepare a data folder, which must contain subfolders `assemblies/` containing the
+assemblies and `references/` containing reference genomes to which the assemblies will be compared.  
+For example:
 ```
 .
 ├── assemblies
@@ -39,10 +40,11 @@ and the reference genomes, for example:
 └── references
     └── bac_sub_ref.fa
 ```
+NB: The fasta files need to have the `.fa` extension.
 
 Run workflow in that folder, e.g. with 20 threads:
 ```
-snakemake -k -s /opt/software/score-assemblies/Snakefile --cores 20
+snakemake -s /opt/software/score-assemblies/Snakefile --cores 20
 ```
 
 If no references are supplied, then only ideel and BUSCO are done.

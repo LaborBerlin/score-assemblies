@@ -10,6 +10,11 @@ wildcard_constraints:
   ref = "[^/\\\\]+"
 
 assemblies, = glob_wildcards("assemblies/{id,[^/\\\\]+}.fa")
+
+if len(assemblies) == 0:
+	print("Found no *.fa files in folder assemblies/")
+	quit()
+
 references, = glob_wildcards("references/{ref,[^/\\\\]+}.fa")
 
 list_assess_assembly_summ = []
