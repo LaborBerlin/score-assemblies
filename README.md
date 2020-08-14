@@ -30,11 +30,11 @@ and the reference genomes, for example:
 ```
 .
 ├── assemblies
-│   ├── assemblies/flye-i4.fa
-│   ├── assemblies/flye-i4+raconx4.fa
-│   ├── assemblies/flye-i4+raconx4+medaka.fa
-│   ├── assemblies/raven-p4.fa
-│   └── assemblies/raven-p4+medaka.fa
+│   ├── flye-i4.fa
+│   ├── flye-i4+raconx4.fa
+│   ├── flye-i4+raconx4+medaka.fa
+│   ├── raven-p4.fa
+│   └── raven-p4+medaka.fa
 │
 └── references
     └── bac_sub_ref.fa
