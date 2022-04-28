@@ -8,7 +8,7 @@ The workflow includes the following programs:
 * [NucDiff](https://github.com/uio-cels/NucDiff/)
 * [QUAST](http://quast.sourceforge.net/quast)
 * [BUSCO](https://busco.ezlab.org/)
-* [ideel](https://github.com/mw55309/ideel/)
+* [ideel](https://github.com/mw55309/ideel/), which uses [prodigal](https://github.com/hyattpd/Prodigal) and [diamond](https://github.com/bbuchfink/diamond)
 
 ## Installation
 Clone repository, for example:
@@ -26,7 +26,7 @@ conda activate score-assemblies
 
 ## Usage
 First, prepare a data folder, which must contain subfolders `assemblies/` containing the
-assemblies and `references/` containing reference genomes to which the assemblies will be compared.  
+assemblies and, optionally, `references/` and `references-protein/`, which containin reference genomes and their proteins with which the assemblies and predicted proteins will be compared.  
 For example:
 ```
 .
@@ -37,8 +37,11 @@ For example:
 │   ├── raven-p4.fa
 │   └── raven-p4+medaka.fa
 │
-└── references
-    └── bac_sub_ref.fa
+├── references
+│   └── bac_sub_ref.fa
+│
+└── references-protein
+    └── bac_sub_ref.faa
 ```
 NB: The fasta files need to have the `.fa` extension.
 
@@ -108,6 +111,8 @@ Open reading frames are predicted from each assembly via Prodigal and are
 search in the Uniprot sprot database with diamond, retaining the best alignment
 for each ORF. For each assembly, the distribution of the ratios between length
 of the ORF and the matching database sequence are plotted to `ideel/ideel_stats.pdf`.
+
+Additionally, diamond alignments are done between the predicted ORFs and the supplied reference proteins.
 
 ##### Example plot of ideel result
 ![Example ideel](example/example_ideel.png?raw=true)

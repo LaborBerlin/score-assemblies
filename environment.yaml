@@ -6,7 +6,7 @@ channels:
   - anaconda
 dependencies:
   - bioconda::pomoxis=0.3.2
-  - bioconda::busco=4.1.2
+  - bioconda::busco=5.2.2
   - bioconda::augustus=3.3.3
   - bioconda::snakemake=5.10.0
   - bioconda::quast=5.0.2

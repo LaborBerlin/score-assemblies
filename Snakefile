@@ -16,6 +16,7 @@ if len(assemblies) == 0:
 	quit()
 
 references, = glob_wildcards("references/{ref,[^/\\\\]+}.fa")
+references_protein, = glob_wildcards("references-protein/{ref,[^/\\\\]+}.faa")
 
 list_assess_assembly_summ = []
 list_assess_assembly_meanQ_tsv = []
@@ -51,6 +52,10 @@ if len(references) > 0:
 	list_nucdiff = [ "nucdiff/all_stats.tsv" ]
 	list_nucdiff_pdf = expand("nucdiff/{ref}_nucdiff_stats.pdf", ref=references)
 
+if len(references_protein) > 0:
+	list_diamondref_tsv = expand("ideel/diamond-ref/{ref}/{id}_{ref}.tsv", id=assemblies, ref=references_protein)
+	list_diamondref_pdf = expand("ideel/{ref}_ideel_stats.pdf", ref=references_protein)
+
 list_busco_out = expand("busco/{id}/short_summary.specific.{blin}_odb10.{id}.txt", id=assemblies, blin=busco_lineage)
 list_busco_tsv = expand("busco/{id}/short_summary.specific.{blin}_odb10.{id}.tsv", id=assemblies, blin=busco_lineage)
 
@@ -83,7 +88,9 @@ rule all:
 		"ideel/uniprot/uniprot_sprot.dmnd",
 		list_prodigal_proteins,
 		list_diamond_output,
-		"ideel/ideel_stats.pdf"
+		"ideel/ideel_stats.pdf",
+		list_diamondref_tsv,
+		list_diamondref_pdf
 
 # -------------------------------------------------------------------------------------------------------------------------------------------
 # pomoxis
@@ -96,7 +103,7 @@ rule assess_assembly:
 	output:
 		summ = "pomoxis/{id}/assess_assembly/{id}_{ref}_summ.txt",
 		meanQ = "pomoxis/{id}/assess_assembly/{id}_{ref}_meanQ.tsv"
-	log: "pomoxis/{id}/assess_assembly/{id}_{ref}_log.txt"
+	log: "log/pomoxis/{id}/assess_assembly/{id}_{ref}_log.txt"
 	shell:
 		"""
 		assess_assembly -r {input.ref} -i {input.assembly} -p pomoxis/{wildcards.id}/assess_assembly/{wildcards.id}_{wildcards.ref} >{log} 2>&1
@@ -110,7 +117,7 @@ rule assess_homopolymers_minimap:
 		assembly = "assemblies/{id}.fa",
 		ref = "references/{ref}.fa"
 	output: "pomoxis/{id}/assess_homopolymers/{id}_{ref}.bam"
-	log: "pomoxis/{id}/assess_homopolymers/{id}_{ref}.minimap2.log"
+	log: "log/pomoxis/{id}/assess_homopolymers/{id}_{ref}.minimap2.log"
 	shell:
 		"""
 		minimap2 -x asm5 -t {threads} --MD -a {input.ref} {input.assembly} 2>{log} | samtools sort -o {output} - >>{log} 2>&1
@@ -127,7 +134,7 @@ rule assess_homopolymers:
 	params:
 		count_dir = directory("pomoxis/{id}/assess_homopolymers/{id}_{ref}_count"),
 		analyse_dir = directory("pomoxis/{id}/assess_homopolymers/{id}_{ref}_analyse")
-	log: "pomoxis/{id}/assess_homopolymers/{id}_{ref}_log.txt"
+	log: "log/pomoxis/{id}/assess_homopolymers/{id}_{ref}_log.txt"
 	shell:
 		"""
 		rm -rf {params.count_dir} {params.analyse_dir}
@@ -167,7 +174,7 @@ rule busco:
 		assembly = "assemblies/{id}.fa"
 	output:
 		"busco/{id}/short_summary.specific.{busco_lineage}_odb10.{id}.txt",
-	log: "busco/{id}/busco_{busco_lineage}.log"
+	log: "log/busco/{id}/busco_{busco_lineage}.log"
 	shell:
 		"""
 		cd busco && busco -q -c {threads} -f -m genome -l {busco_lineage} -o {wildcards.id} -i ../{input} >../{log} 2>&1
@@ -204,7 +211,7 @@ rule quast:
 		reference = "references/{ref}.fa"
 	output:
 		report = "quast/{ref}/report.html"
-	log: "quast/{ref}/quast.log"
+	log: "log/quast/{ref}/quast.log"
 	shell:
 		"""
 		quast -t {threads} --glimmer -o quast/{wildcards.ref} -r {input.reference} assemblies/*.fa >{log} 2>&1
@@ -222,7 +229,7 @@ rule dnadiff:
 	output:
 		dnadiff_report = "dnadiff/{ref}/{id}-dnadiff.report",
 		stats_tsv = "dnadiff/{ref}/{id}-dnadiff-stats.tsv"
-	log: "dnadiff/{ref}/{id}-dnadiff.log"
+	log: "log/dnadiff/{ref}/{id}-dnadiff.log"
 	shell:
 		"""
 		dnadiff -p dnadiff/{wildcards.ref}/{wildcards.id}-dnadiff {input.reference} {input.assembly} >{log} 2>&1
@@ -254,7 +261,7 @@ rule nucdiff:
 		nucdiff_tsv = "nucdiff/{ref}/{id}-nucdiff/nucdiff.tsv"
 	params:
 		nucdiff_dir = directory("nucdiff/{ref}/{id}-nucdiff/")
-	log: "nucdiff/{ref}/{id}-nucdiff.log"
+	log: "log/nucdiff/{ref}/{id}-nucdiff.log"
 	shell:
 		"""
 		nucdiff {input.reference} {input.assembly} {params.nucdiff_dir} nucdiff >{log} 2>&1
@@ -273,14 +280,14 @@ rule gather_stats_nucdiff:
 
 
 # -------------------------------------------------------------------------------------------------------------------------------------------
-# ideel
+# ideel with uniprot
 # -------------------------------------------------------------------------------------------------------------------------------------------
 
 rule download_uniprot:
 	priority: 10
 	output:
 		"ideel/uniprot/uniprot_sprot.fasta.gz"
-	log: "ideel/uniprot/download.log"
+	log: "log/ideel/uniprot/download.log"
 	shell:
 		"""
 		wget -P ideel/uniprot ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz >{log} 2>&1
@@ -300,10 +307,12 @@ rule diamond_makedb:
 rule prodigal:
 	input: "assemblies/{id}.fa"
 	output: "ideel/prodigal/{id}.faa"
-	log: "ideel/prodigal/{id}.log"
+	log: "log/ideel/prodigal/{id}.log"
 	shell:
 		"""
 		prodigal -a {output} -i {input} >{log} 2>&1
+		# remove stop codon (*) from end of sequences
+		sed -i 's/*$//' {output}
 		"""
 
 rule diamond:
@@ -312,12 +321,38 @@ rule diamond:
 		proteins = "ideel/prodigal/{id}.faa",
 		db = "ideel/uniprot/uniprot_sprot.dmnd"
 	output: "ideel/diamond/{id}.tsv"
-	log: "ideel/diamond/{id}.log"
+	log: "log/ideel/diamond/{id}.log"
 	shell:
 		"""
 		diamond blastp --threads {threads} --max-target-seqs 1 --db {input.db} --query {input.proteins} --outfmt 6 qlen slen --out {output} >{log} 2>&1
 		"""
 
+# -------------------------------------------------------------------------------------------------------------------------------------------
+# protein comparison to reference genome
+# -------------------------------------------------------------------------------------------------------------------------------------------
+
+rule diamond_ref_makedb:
+	input:
+		"references-protein/{ref}.faa"
+	output:
+		"references-protein/{ref}.dmnd"
+	log: "logs/references-protein/{ref}-diamond-makedb.log"
+	shell:
+		"""
+		diamond makedb --db {output} --in {input} >{log} 2>&1
+		"""
+
+rule diamond_ref:
+  threads: 5
+	input:
+		proteins = "ideel/prodigal/{id}.faa",
+		db = "references-protein/{ref}.dmnd"
+	output: "ideel/diamond-ref/{ref}/{id}_{ref}.tsv"
+	log: "log/ideel/diamond-ref/{ref}_{id}.log"
+	shell:
+		"""
+		diamond blastp --threads {threads} --max-target-seqs 1 --db {input.db} --query {input.proteins} --outfmt 6 qlen slen --out {output} >{log} 2>&1
+		"""
 # -------------------------------------------------------------------------------------------------------------------------------------------
 # plots
 # -------------------------------------------------------------------------------------------------------------------------------------------
@@ -361,6 +396,7 @@ rule plot_ideel:
 	input:
 		list_diamond_output
 	output:
-		"ideel/ideel_stats.pdf"
+		"ideel/ideel_stats.pdf",
+		list_diamondref_pdf
 	script: "scripts/plot-ideel.R"
 
