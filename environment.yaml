@@ -17,3 +17,7 @@ dependencies:
   - conda-forge::r-tidyverse
   - conda-forge::r-base
   - conda-forge::r-tidytext
+  - conda-forge::r-dt
+  - conda-forge::r-knitr
+  - conda-forge::r-rmarkdown
+  - conda-forge::r-markdown

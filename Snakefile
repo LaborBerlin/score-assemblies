@@ -1,6 +1,9 @@
 from glob import glob
 shell.executable("/bin/bash")
 
+snake_dir = workflow.basedir
+report_rmd = snake_dir + "/scripts/report.Rmd"
+
 workflow.global_resources['wget_busco'] = 1
 
 busco_lineage = config.get('busco_lineage', 'bacteria')
@@ -53,14 +56,14 @@ if len(references) > 0:
 	list_nucdiff_pdf = expand("nucdiff/{ref}_nucdiff_stats.pdf", ref=references)
 
 if len(references_protein) > 0:
-	list_diamondref_tsv = expand("ideel/diamond-ref/{ref}/{id}_{ref}.tsv", id=assemblies, ref=references_protein)
-	list_diamondref_pdf = expand("ideel/{ref}_ideel_stats.pdf", ref=references_protein)
+	list_ideel_ref_tsv = expand("ideel/diamond-ref/{ref}/{id}_{ref}.tsv", id=assemblies, ref=references_protein)
+	list_ideel_ref_pdf = expand("ideel/{ref}_ideel_stats.pdf", ref=references_protein)
 
 list_busco_out = expand("busco/{id}/short_summary.specific.{blin}_odb10.{id}.txt", id=assemblies, blin=busco_lineage)
 list_busco_tsv = expand("busco/{id}/short_summary.specific.{blin}_odb10.{id}.tsv", id=assemblies, blin=busco_lineage)
 
 list_prodigal_proteins = expand("ideel/prodigal/{id}.faa", id=assemblies)
-list_diamond_output = expand("ideel/diamond/{id}.tsv", id=assemblies)
+list_ideel_uniprot_tsv = expand("ideel/diamond/{id}.tsv", id=assemblies)
 
 rule all:
 	input:
@@ -87,10 +90,11 @@ rule all:
 		"ideel/uniprot/uniprot_sprot.fasta.gz",
 		"ideel/uniprot/uniprot_sprot.dmnd",
 		list_prodigal_proteins,
-		list_diamond_output,
+		list_ideel_uniprot_tsv,
 		"ideel/ideel_stats.pdf",
-		list_diamondref_tsv,
-		list_diamondref_pdf
+		list_ideel_uniprot_tsv,
+		list_ideel_ref_pdf,
+		"report.html"
 
 # -------------------------------------------------------------------------------------------------------------------------------------------
 # pomoxis
@@ -298,7 +302,7 @@ rule diamond_makedb:
 		"ideel/uniprot/uniprot_sprot.fasta.gz"
 	output:
 		"ideel/uniprot/uniprot_sprot.dmnd"
-	log: "ideel/uniprot/diamond-makedb.log"
+	log: "log/diamond-makedb-uniprot.log"
 	shell:
 		"""
 		diamond makedb --db ideel/uniprot/uniprot_sprot --in ideel/uniprot/uniprot_sprot.fasta.gz >{log} 2>&1
@@ -394,9 +398,27 @@ rule plot_nucdiff:
 
 rule plot_ideel:
 	input:
-		list_diamond_output
+		list_ideel_uniprot_tsv
 	output:
 		"ideel/ideel_stats.pdf",
-		list_diamondref_pdf
+		list_ideel_ref_pdf
 	script: "scripts/plot-ideel.R"
+
+rule report_html:
+	input:
+		"busco/all_stats.tsv",
+		list_ideel_uniprot_tsv,
+		list_ideel_ref_tsv
+	output:
+		"report.html"
+	message:
+		"knit report HTML"
+	log:
+		"logs/html.log"
+	params:
+		wd = os.getcwd()
+	shell:
+		"""
+		Rscript -e 'args<-commandArgs(trailingOnly = TRUE); rmarkdown::render(args[1], output_file=args[3], knit_root_dir=args[4])' {report_rmd} {snake_dir} {params.wd}/{output} {params.wd} >{log} 2>&1
+		"""
 
