@@ -27,8 +27,25 @@ library(knitr)
 #library(plotly)
 
 options(dplyr.summarise.inform = FALSE)
-#opts_knit$set(root.dir = "~/temp/score-assemblies")
+opts_knit$set(root.dir = "~/temp/score-assemblies")
 
+```
+
+## BUSCO
+
+[BUSCO](https://busco.ezlab.org/) measures the percentage of complete, fragmented, or missing core genes that are usually present in bacterial clades.
+
+```{r busco}
+filename_busco_stats_tsv <- "busco/all_stats.tsv"
+
+df.busco <- read_tsv(filename_busco_stats_tsv, col_names = c("assembly", "% complete", "% fragmented", "% missing", "n"), col_types = "fdddd") %>%
+  select(-n)
+
+df.busco %>%
+  DT::datatable(escape = FALSE, rownames = FALSE, class="compact hover",
+                options = list(pageLength = 10, searchHighlight = TRUE, paginate = TRUE, lengthChange = FALSE, fixedHeader = TRUE, order = list(list(1, 'desc'), list(0, 'asc')))) %>%
+  formatStyle(names(df.busco), 'font-size' = '90%') %>%
+  formatStyle(names(df.busco), 'vertical-align' = 'top')
 ```
 
 ## IDEEL
@@ -67,8 +84,8 @@ df.ideel_uniprot <- df.all %>%
   ungroup()
 
 df.ideel_uniprot %>% 
- DT::datatable(escape = FALSE, rownames = FALSE, class="compact hover", extensions = 'FixedHeader',
-  							options = list(pageLength = 10, searchHighlight = TRUE, paginate = TRUE, lengthChange = FALSE, fixedHeader = TRUE)) %>%
+ DT::datatable(escape = FALSE, rownames = FALSE, class="compact hover",
+               options = list(pageLength = 10, searchHighlight = TRUE, paginate = TRUE, lengthChange = FALSE, fixedHeader = TRUE, order = list(list(3, 'desc'), list(0, 'asc')))) %>%
   formatStyle(names(df.ideel_uniprot), 'font-size' = '90%') %>%
   formatStyle(names(df.ideel_uniprot), 'vertical-align' = 'top')
 ```
@@ -118,8 +135,8 @@ for (r in seq_along(ref_list)) {
 }
 
 df.ideel_ref %>% 
- DT::datatable(escape = FALSE, rownames = FALSE, class="compact hover", extensions = 'FixedHeader',
-  							options = list(pageLength = 10, searchHighlight = TRUE, paginate = TRUE, lengthChange = FALSE, fixedHeader = TRUE, order = list(list(2, 'desc')))) %>%
+ DT::datatable(escape = FALSE, rownames = FALSE, class="compact hover",
+               options = list(pageLength = 10, searchHighlight = TRUE, paginate = TRUE, lengthChange = FALSE, fixedHeader = TRUE, order = list(list(3, 'desc'), list(0, 'asc')))) %>%
   formatStyle(names(df.ideel_ref), 'font-size' = '90%') %>%
   formatStyle(names(df.ideel_ref), 'vertical-align' = 'top')
 
