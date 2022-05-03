@@ -341,7 +341,7 @@ rule diamond_ref_makedb:
 		"references-protein/{ref}.faa"
 	output:
 		"references-protein/{ref}.dmnd"
-	log: "logs/references-protein/{ref}-diamond-makedb.log"
+	log: "log/references-protein/{ref}-diamond-makedb.log"
 	shell:
 		"""
 		diamond makedb --db {output} --in {input} >{log} 2>&1
@@ -416,7 +416,7 @@ rule report_html:
 	message:
 		"knit report HTML"
 	log:
-		"logs/html.log"
+		"log/html.log"
 	params:
 		wd = os.getcwd()
 	shell:

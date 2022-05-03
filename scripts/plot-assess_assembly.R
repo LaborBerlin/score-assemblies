@@ -12,10 +12,7 @@ df <- read_tsv(filename_assess_assembly_all_scores_tsv,
 
 for (i_ref in unique(df$reference)) {
   df.plot <- df %>%
-    filter(reference == i_ref) %>%
-		#remove assemblies that were polished against other references
-		filter(!(str_detect(assembly, "proovframe|homopolish") & !str_detect(assembly, i_ref)))
-
+    filter(reference == i_ref)
   p <- df.plot %>%
     ggplot(aes(x = reorder(assembly, Qscore, FUN = max), y = Qscore)) +
     geom_line(aes(group = reference), color = "grey70", size = 1) +

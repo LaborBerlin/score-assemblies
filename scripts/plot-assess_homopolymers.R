@@ -14,9 +14,7 @@ df <- read_tsv(filename_assess_homopolymers_all_correct_len_tsv,
 
 for (i_ref in unique(df$reference)) {
   df.plot <- df %>%
-    filter(reference == i_ref) %>%
-		#remove assemblies that were polished against other references
-		filter(!(str_detect(assembly, "proovframe|homopolish") & !str_detect(assembly, i_ref)))
+    filter(reference == i_ref)
 
   p <- df.plot %>%
     mutate(base = ordered(base, levels = c("A", "T", "C", "G", "AT", "GC"))) %>%

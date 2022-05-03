@@ -12,7 +12,10 @@ df <- read_tsv(filename_nucdiff_stats_tsv,
 )
 
 for (i_ref in unique(df$reference)) {
-  p <- df %>%
+  df.plot <- df %>%
+    filter(reference == i_ref)
+  
+  p <- df.plot %>%
     filter(reference == i_ref) %>%
     mutate(assembly = reorder_within(assembly, value, measure, FUN = min)) %>%
     ggplot(aes(x = assembly, y = value)) +
