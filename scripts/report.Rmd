@@ -48,6 +48,54 @@ df.busco %>%
   formatStyle(names(df.busco), 'vertical-align' = 'top')
 ```
 
+
+## pomoxis
+
+The [pomoxis](https://github.com/nanoporetech/pomoxis) tool _assess_assembly_ compares the assembly to a reference genome resulting in a mean Q score and error rate over all sequences in the reference genome.
+
+```{r pomoxis_assess_assembly}
+filename_assess_assembly_all_scores_tsv <- "pomoxis/assess_assembly_all_scores.tsv"
+df.assess_assembly <- read_tsv(filename_assess_assembly_all_scores_tsv, col_names = c("assembly", "reference", "Qscore", "percErr"), col_types = "ffdc") %>%
+  mutate(percErr = parse_number(percErr))
+df.assess_assembly %>%
+  DT::datatable(escape = FALSE, rownames = FALSE, class="compact hover",
+               options = list(pageLength = 10, searchHighlight = TRUE, paginate = TRUE, lengthChange = FALSE, fixedHeader = TRUE, order = list(list(2, 'desc'), list(0, 'asc')))) %>%
+  formatStyle(names(df.assess_assembly), 'font-size' = '90%') %>%
+  formatStyle(names(df.assess_assembly), 'vertical-align' = 'top')
+
+```
+
+The [pomoxis](https://github.com/nanoporetech/pomoxis) tool _assess_homopolymers_ compares the assembly to a reference genome and calculates the error rate for each homopolymer length.  
+The table shows the rates of correct homopolymers of length 3 to 8 for the four bases A, C, G, and T as well as the mean of all values in the last column.
+```{r pomoxis_assses_homopolymers}
+filename_assess_homopolymers_all_correct_len_tsv <- "pomoxis/assess_homopolymers_all_correct_len.tsv"
+
+df.assess_homopolymers <- read_tsv(filename_assess_homopolymers_all_correct_len_tsv,
+  col_names = c("assembly", "reference", "rlen", "A", "C", "G", "T", "A_n", "C_n", "G_n", "T_n", "AT_n", "AT", "GC_n", "GC"),
+  col_types = "fffdddddddddddd"
+) %>%
+  select(-ends_with("_n")) %>%
+  gather(key = "base", value = "frac_correct", -assembly, -reference, -rlen)
+
+df.single_nuc <- df.assess_homopolymers %>%
+  filter(str_length(base) == 1) %>%
+  mutate(rlen = paste0("len", rlen)) %>%
+  group_by(assembly, reference, rlen) %>%
+  summarise(mean_frac_correct  = mean(frac_correct, na.rm = TRUE)) %>%
+  ungroup() %>%
+  pivot_wider(id_cols = c(assembly, reference), names_from = rlen, values_from = mean_frac_correct) %>%
+  rowwise() %>%
+  mutate(`mean` = mean(c(len3, len4, len5, len6, len7, len8, na.rm = TRUE)))
+
+df.single_nuc %>%
+   DT::datatable(escape = FALSE, rownames = FALSE, class="compact hover",
+               options = list(pageLength = 10, searchHighlight = TRUE, paginate = TRUE, lengthChange = FALSE, fixedHeader = TRUE, order = list(list(8, 'desc'), list(0, 'asc')))) %>%
+  formatRound(c(3:9), digits = 3) %>%
+  formatStyle(names(df.single_nuc), 'font-size' = '90%') %>%
+  formatStyle(names(df.single_nuc), 'vertical-align' = 'top')
+
+```
+
 ## IDEEL
 
 ### Comparison with Uniprot Sprot database

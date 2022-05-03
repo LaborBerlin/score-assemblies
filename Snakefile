@@ -39,12 +39,12 @@ list_nucdiff = []
 list_nucdiff_pdf = []
 if len(references) > 0:
 	list_assess_assembly_summ = expand("pomoxis/{id}/assess_assembly/{id}_{ref}_summ.txt", id=assemblies, ref=references)
-	list_assess_assembly_meanQ_tsv = expand("pomoxis/{id}/assess_assembly/{id}_{ref}_meanQ.tsv", id=assemblies, ref=references)
+	list_assess_assembly_meanQ_tsv = expand("pomoxis/{id}/assess_assembly/{id}_{ref}_scores.tsv", id=assemblies, ref=references)
 	list_assess_assembly_meanQ_pdf = expand("pomoxis/{ref}_assess_assembly_all_meanQ.pdf", ref=references)
 	list_assess_homopolymers_rel_len = expand("pomoxis/{id}/assess_homopolymers/{id}_{ref}_rel_len.tsv", id=assemblies, ref=references)
 	list_assess_homopolymers_correct_len_tsv = expand("pomoxis/{id}/assess_homopolymers/{id}_{ref}_correct_len.tsv", id=assemblies, ref=references)
 	list_assess_homopolymers_correct_len_pdf = expand("pomoxis/{ref}_assess_homopolymers_all_correct_len.pdf", ref=references)
-	list_pomoxis = ["pomoxis/assess_assembly_all_meanQ.tsv", "pomoxis/assess_homopolymers_all_rel_len.tsv", "pomoxis/assess_homopolymers_all_correct_len.tsv" ]
+	list_pomoxis = ["pomoxis/assess_assembly_all_scores.tsv", "pomoxis/assess_homopolymers_all_rel_len.tsv", "pomoxis/assess_homopolymers_all_correct_len.tsv" ]
 	list_quast_report = expand("quast/{ref}/report.html", ref=references)
 	list_dnadiff_report = expand("dnadiff/{ref}/{id}-dnadiff.report", id=assemblies, ref=references)
 	list_dnadiff = [ "dnadiff/all_stats.tsv" ]
@@ -106,13 +106,14 @@ rule assess_assembly:
 		ref = "references/{ref}.fa"
 	output:
 		summ = "pomoxis/{id}/assess_assembly/{id}_{ref}_summ.txt",
-		meanQ = "pomoxis/{id}/assess_assembly/{id}_{ref}_meanQ.tsv"
+		tsv = "pomoxis/{id}/assess_assembly/{id}_{ref}_scores.tsv"
 	log: "log/pomoxis/{id}/assess_assembly/{id}_{ref}_log.txt"
 	shell:
 		"""
 		assess_assembly -r {input.ref} -i {input.assembly} -p pomoxis/{wildcards.id}/assess_assembly/{wildcards.id}_{wildcards.ref} >{log} 2>&1
 		meanQ=$(grep -A2 '#  Q Scores' {output.summ} | tail -n1 | awk '{{print $2}}')
-		echo "{wildcards.id}\t{wildcards.ref}\t$meanQ" > {output.meanQ}
+		percErr=$(grep -A2 '#  Percentage Errors' {output.summ} | tail -n1 | awk '{{print $2}}')
+		echo "{wildcards.id}\t{wildcards.ref}\t$meanQ\t$percErr" > {output.tsv}
 		"""
 
 rule assess_homopolymers_minimap:
@@ -155,7 +156,7 @@ rule gather_stats_pomoxis:
 		hp_rel_len = list_assess_homopolymers_rel_len,
 		hp_correct_len = list_assess_homopolymers_correct_len_tsv
 	output:
-		all_aa_meanQ = "pomoxis/assess_assembly_all_meanQ.tsv",
+		all_aa_meanQ = "pomoxis/assess_assembly_all_scores.tsv",
 		all_hp_rel_len = "pomoxis/assess_homopolymers_all_rel_len.tsv",
 		all_hp_correct_len = "pomoxis/assess_homopolymers_all_correct_len.tsv"
 	shell:
@@ -363,7 +364,7 @@ rule diamond_ref:
 
 rule plot_assess_assembly:
 	input:
-		"pomoxis/assess_assembly_all_meanQ.tsv"
+		"pomoxis/assess_assembly_all_scores.tsv"
 	output:
 		list_assess_assembly_meanQ_pdf
 	script: "scripts/plot-assess_assembly.R"
@@ -408,7 +409,8 @@ rule report_html:
 	input:
 		"busco/all_stats.tsv",
 		list_ideel_uniprot_tsv,
-		list_ideel_ref_tsv
+		list_ideel_ref_tsv,
+		list_pomoxis
 	output:
 		"report.html"
 	message:

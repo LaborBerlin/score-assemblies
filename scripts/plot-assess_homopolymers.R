@@ -13,8 +13,12 @@ df <- read_tsv(filename_assess_homopolymers_all_correct_len_tsv,
   gather(key = "base", value = "frac_correct", -assembly, -reference, -rlen)
 
 for (i_ref in unique(df$reference)) {
-  p <- df %>%
+  df.plot <- df %>%
     filter(reference == i_ref) %>%
+		#remove assemblies that were polished against other references
+		filter(!(str_detect(assembly, "proovframe|homopolish") & !str_detect(assembly, i_ref)))
+
+  p <- df.plot %>%
     mutate(base = ordered(base, levels = c("A", "T", "C", "G", "AT", "GC"))) %>%
     ggplot(aes(x = rlen, y = frac_correct)) +
     geom_point(aes(color = assembly), na.rm = TRUE) +
