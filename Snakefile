@@ -37,6 +37,8 @@ list_nucdiff_stat = []
 list_nucdiff_tsv = []
 list_nucdiff = []
 list_nucdiff_pdf = []
+list_ideel_ref_tsv = []
+list_ideel_ref_pdf = []
 if len(references) > 0:
 	list_assess_assembly_summ = expand("pomoxis/{id}/assess_assembly/{id}_{ref}_summ.txt", id=assemblies, ref=references)
 	list_assess_assembly_meanQ_tsv = expand("pomoxis/{id}/assess_assembly/{id}_{ref}_scores.tsv", id=assemblies, ref=references)

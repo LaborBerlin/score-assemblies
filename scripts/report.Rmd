@@ -27,8 +27,14 @@ library(knitr)
 #library(plotly)
 
 options(dplyr.summarise.inform = FALSE)
-opts_knit$set(root.dir = "~/temp/score-assemblies")
 
+do_reference_genomes <- dir.exists(paste0(getwd(),'/references'))
+do_reference_proteomes <-  dir.exists(paste0(getwd(),'/references-protein'))
+
+#for debugging:
+#opts_knit$set(root.dir = "~/temp/score-assemblies")
+#do_reference_genomes <- TRUE
+#do_reference_proteomes <- TRUE
 ```
 
 ## BUSCO
@@ -49,11 +55,14 @@ df.busco %>%
 ```
 
 
-## pomoxis
+```{r eval=do_reference_genomes}
+asis_output("## pomoxis\\n")
+```
 
-The [pomoxis](https://github.com/nanoporetech/pomoxis) tool _assess_assembly_ compares the assembly to a reference genome resulting in a mean Q score and error rate over all sequences in the reference genome.
+```{r pomoxis_assess_assembly, eval=do_reference_genomes}
 
-```{r pomoxis_assess_assembly}
+asis_output("The [pomoxis](https://github.com/nanoporetech/pomoxis) tool _assess_assembly_ compares the assembly to a reference genome resulting in a mean Q score and error rate over all sequences in the reference genome.\\n")
+
 filename_assess_assembly_all_scores_tsv <- "pomoxis/assess_assembly_all_scores.tsv"
 df.assess_assembly <- read_tsv(filename_assess_assembly_all_scores_tsv, col_names = c("assembly", "reference", "Qscore", "percErr"), col_types = "ffdc") %>%
   mutate(percErr = parse_number(percErr))
@@ -62,12 +71,12 @@ df.assess_assembly %>%
                options = list(pageLength = 10, searchHighlight = TRUE, paginate = TRUE, lengthChange = FALSE, fixedHeader = TRUE, order = list(list(2, 'desc'), list(0, 'asc')))) %>%
   formatStyle(names(df.assess_assembly), 'font-size' = '90%') %>%
   formatStyle(names(df.assess_assembly), 'vertical-align' = 'top')
-
 ```
 
-The [pomoxis](https://github.com/nanoporetech/pomoxis) tool _assess_homopolymers_ compares the assembly to a reference genome and calculates the error rate for each homopolymer length.  
-The table shows the rates of correct homopolymers of length 3 to 8 for the four bases A, C, G, and T as well as the mean of all values in the last column.
-```{r pomoxis_assses_homopolymers}
+```{r pomoxis_assses_homopolymers, eval=do_reference_genomes}
+asis_output("The [pomoxis](https://github.com/nanoporetech/pomoxis) tool _assess_homopolymers_ compares the assembly to a reference genome and calculates the error rate for each homopolymer length.  \n")
+asis_output("The table shows the rates of correct homopolymers of length 3 to 8 for the four bases A, C, G, and T as well as the mean of all values in the last column.\n")
+
 filename_assess_homopolymers_all_correct_len_tsv <- "pomoxis/assess_homopolymers_all_correct_len.tsv"
 
 df.assess_homopolymers <- read_tsv(filename_assess_homopolymers_all_correct_len_tsv,
@@ -96,11 +105,14 @@ df.single_nuc %>%
 
 ```
 
-## dnadiff
 
-dnadiff from the [mummer](https://mummer4.github.io/index.html) package compares each assembly to the reference genomes and calculates an average identity and the number of indels.
+```{r eval=do_reference_genomes}
+asis_output("## dnadiff\\n")
+```
 
-```{r dnadiff}
+```{r dnadiff, eval=do_reference_genomes}
+asis_output("dnadiff from the [mummer](https://mummer4.github.io/index.html) package compares each assembly to the reference genomes and calculates an average identity and the number of indels.\n")
+
 filename_dnadiff_stats_tsv <- "dnadiff/all_stats.tsv"
 df.dnadiff <- read_tsv(filename_dnadiff_stats_tsv, col_names = c("assembly", "reference", "measure", "value", "value2"), col_types = "fffdd") %>%
   pivot_wider(id_cols = c(assembly, reference), names_from = measure, values_from = value)
@@ -112,11 +124,14 @@ df.dnadiff %>%
   formatStyle(names(df.dnadiff), 'vertical-align' = 'top')
 ```
 
-## NucDiff
 
-[NucDiff](https://github.com/uio-cels/NucDiff/) compares each assembly to the reference genomes and calculates the number of insertions, deletions, and substitutions.
+```{r eval=do_reference_genomes}
+asis_output("## NucDiff\\n")
+```
 
-```{r nucdiff}
+```{r nucdiff, eval=do_reference_genomes}
+asis_output("[NucDiff](https://github.com/uio-cels/NucDiff/) compares each assembly to the reference genomes and calculates the number of insertions, deletions, and substitutions.\n")
+
 filename_nucdiff_stats_tsv <- "nucdiff/all_stats.tsv"
 
 df.nucdiff <-df <- read_tsv(filename_nucdiff_stats_tsv, col_names = c("assembly", "reference", "measure", "value"), col_types = "fffd") %>%
@@ -135,7 +150,7 @@ df.nucdiff %>%
 ### Comparison with Uniprot Sprot database
 
 ORFs are predicted in each assembly using Prodigal, which are then searched against die Uniprot SPROT database using diamond.
-Measured is the fraction of predicted ORFS, which were ≥95% the length of their best-matching protein sequence in the database (higher fractions being better).
+Measured is the fraction of predicted ORFS that were ≥95% the length of their best-matching protein sequence in the database (higher fractions being better).
 
 ```{r}
 dir_ideel_diamond <- "ideel/diamond/"
@@ -186,12 +201,13 @@ p <- ggplot(df.all, aes(x = SCov)) +
 p
 ```
 
-### Comparison with reference genomes
+```{r eval=do_reference_proteomes}
+asis_output("### Comparison with reference proteomes\\n")
+```
 
-ORFs are predicted in each assembly using Prodigal, which are then searched against the provided reference protein sequences using diamond.
-Measured is the number and fraction of predicted ORFS, which have the same length as their best-matching reference protein sequence.
-
-```{r}
+```{r eval=do_reference_proteomes}
+asis_output("ORFs are predicted in each assembly using Prodigal, which are then searched against the provided reference protein sequences using diamond.  \n")
+asis_output("Measured is the number and fraction of predicted ORFS, which have the same length as their best-matching reference protein sequence.\n")
 
 # TODO load number of refefence proteins from faa files and add to table
 
