@@ -94,7 +94,7 @@ rule all:
 		list_prodigal_proteins,
 		list_ideel_uniprot_tsv,
 		"ideel/ideel_stats.pdf",
-		list_ideel_uniprot_tsv,
+		list_ideel_ref_tsv,
 		list_ideel_ref_pdf,
 		"report.html"
 
@@ -401,6 +401,7 @@ rule plot_nucdiff:
 
 rule plot_ideel:
 	input:
+		list_ideel_ref_tsv,
 		list_ideel_uniprot_tsv
 	output:
 		"ideel/ideel_stats.pdf",
@@ -418,7 +419,7 @@ rule report_html:
 	message:
 		"knit report HTML"
 	log:
-		"log/html.log"
+		"log/report.log"
 	params:
 		wd = os.getcwd()
 	shell:

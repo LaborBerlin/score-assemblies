@@ -5,6 +5,7 @@ output:
     theme: united
     toc: yes
     toc_depth: 4
+    mathjax: null
 ---
 
 ```{css, echo=FALSE}
@@ -17,24 +18,68 @@ output:
 			margin-top: 50px;
 			margin-bottom: 50px;
     }
+    /* give background color to the first two rows with th, https://stackoverflow.com/a/35252091/4598742 */
+    #dt_summary table thead tr:nth-child(-n+2) th {
+      background-color: #dfdfdf;
+      --padding: 3px;
+      padding: var(--padding);
+      border: 0px solid white;
+      box-shadow: inset 0 0 0 var(--padding) white;
+      white-space: wrap;
+    }
+
+    #dt_summary table thead tr:nth-child(3) th {
+      font-size: 90%;
+      white-space: nowrap;
+    }
+
+    #dt_summary td {
+      white-space: nowrap;
+    }
+
 ```
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 library(tidyverse)
 library(DT)
+library(htmltools)
 library(knitr)
 #library(plotly)
 
 options(dplyr.summarise.inform = FALSE)
 
-do_reference_genomes <- dir.exists(paste0(getwd(),'/references'))
-do_reference_proteomes <-  dir.exists(paste0(getwd(),'/references-protein'))
+green <- "100, 255, 100"
+red <- "255, 100, 100"
+
+path_references <- paste0(getwd(),'/references')
+path_references_protein <- paste0(getwd(),'/references-protein')
+do_reference_genomes <- dir.exists(path_references)
+do_reference_proteomes <-  dir.exists(path_references_protein)
 
 #for debugging:
 #opts_knit$set(root.dir = "~/temp/score-assemblies")
+#path_references <- paste0("~/temp/score-assemblies", '/references')
+#path_references_protein <- paste0("~/temp/score-assemblies", '/references-protein')
 #do_reference_genomes <- TRUE
 #do_reference_proteomes <- TRUE
+
+if(do_reference_genomes) {
+  list_ref <- list.files(path = path_references, pattern = ".*\\.fa$", recursive = FALSE, full.names = FALSE)
+  list_ref <- sort(str_remove(list_ref, "\\.fa$"))
+}
+if(do_reference_proteomes) {
+  list_ref_protein <- list.files(path = path_references_protein, pattern = ".*\\.faa$", recursive = FALSE, full.names = FALSE)
+  list_ref_protein <- sort(str_remove(list_ref_protein, "\\.faa$"))
+}
+```
+
+```{r quasts, eval=do_reference_genomes, results='asis'}
+cat("## Quast\n")
+for(r in list_ref) {
+  x <- paste0("* [Quast for ", r,"](quast/", r, "/report.html)\n")
+  cat(x)
+}
 ```
 
 ## BUSCO
@@ -66,6 +111,7 @@ asis_output("The [pomoxis](https://github.com/nanoporetech/pomoxis) tool _assess
 filename_assess_assembly_all_scores_tsv <- "pomoxis/assess_assembly_all_scores.tsv"
 df.assess_assembly <- read_tsv(filename_assess_assembly_all_scores_tsv, col_names = c("assembly", "reference", "Qscore", "percErr"), col_types = "ffdc") %>%
   mutate(percErr = parse_number(percErr))
+
 df.assess_assembly %>%
   DT::datatable(escape = FALSE, rownames = FALSE, class="compact hover",
                options = list(pageLength = 10, searchHighlight = TRUE, paginate = TRUE, lengthChange = FALSE, fixedHeader = TRUE, order = list(list(2, 'desc'), list(0, 'asc')))) %>%
@@ -75,7 +121,7 @@ df.assess_assembly %>%
 
 ```{r pomoxis_assses_homopolymers, eval=do_reference_genomes}
 asis_output("The [pomoxis](https://github.com/nanoporetech/pomoxis) tool _assess_homopolymers_ compares the assembly to a reference genome and calculates the error rate for each homopolymer length.  \n")
-asis_output("The table shows the rates of correct homopolymers of length 3 to 8 for the four bases A, C, G, and T as well as the mean of all values in the last column.\n")
+asis_output("The table shows the rates of correct homopolymers of length 3 to 8 for the four bases A, C, G, and T as well as the mean of all values in the last column. NB: This mean is a bit stupid. For example, if there only two homopolymers of length 8 and one is wrong, the rate would be 0.5 for length 8 and this 0.5 will go into the mean with equal weight as the other lengths, overly drawing the mean down.\n")
 
 filename_assess_homopolymers_all_correct_len_tsv <- "pomoxis/assess_homopolymers_all_correct_len.tsv"
 
@@ -94,7 +140,7 @@ df.single_nuc <- df.assess_homopolymers %>%
   ungroup() %>%
   pivot_wider(id_cols = c(assembly, reference), names_from = rlen, values_from = mean_frac_correct) %>%
   rowwise() %>%
-  mutate(`mean` = mean(c(len3, len4, len5, len6, len7, len8, na.rm = TRUE)))
+  mutate(`mean` = mean(c(len3, len4, len5, len6, len7, len8), na.rm = TRUE))
 
 df.single_nuc %>%
    DT::datatable(escape = FALSE, rownames = FALSE, class="compact hover",
@@ -174,7 +220,7 @@ df.all <- dplyr::bind_rows(df_list) %>% mutate(assembly = factor(assembly))
 df.ideel_uniprot <- df.all %>%
   group_by(assembly) %>%
   summarise(
-    n_ORFS = n(),
+    n_ORFs = n(),
     n_full_length_ORFs = sum(qlen == slen),
     n_95perc_ORFs = sum(qlen >= 0.95 * slen)
   ) %>% 
@@ -239,3 +285,126 @@ df.ideel_ref %>%
   formatStyle(names(df.ideel_ref), 'vertical-align' = 'top')
 
 ```
+
+
+## Summary
+
+```{r combined}
+
+list_headings <- c("assembly")
+list_base_colors <- c("0,0,0")
+
+# merge busco and uniprot ideel
+df.out <- select(df.busco, assembly, `% complete`) %>%
+  left_join(select(df.ideel_uniprot, assembly, n_full_length_ORFs, n_95perc_ORFs), by = "assembly")
+
+list_headings <- c(list_headings, "% compl.", "full ORFs", ">95% ORFs")
+list_base_colors <- c(list_base_colors, green, green, green)
+
+# join reference-protein ideel results for each reference
+for(i in list_ref_protein) {
+  df.out <- df.out %>%
+    left_join(df.ideel_ref %>% filter(reference == i) %>% select(assembly, n_full_length_ORFs, n_min95perc_ORFs), by = "assembly")
+
+  list_headings <- c(list_headings, "full ORFs", ">95% ORFs")
+  list_base_colors <- c(list_base_colors, green, green)
+}
+
+# make list of reference genomes
+
+# iterate through reference genomes and add columns from all tools
+for(i in list_ref) {
+  # join assess_assembly results
+  df.out <- df.out %>%
+    left_join(df.assess_assembly %>% filter(reference == i) %>% select(assembly, Qscore, percErr), by = "assembly")
+  list_headings <- c(list_headings, "Q-score", "% Err")
+  list_base_colors <- c(list_base_colors, green, red)
+
+  # join assess_homopolymers results for each reference
+  df.out <- df.out %>%
+    left_join(df.single_nuc %>% filter(reference == i) %>% select(assembly, mean) %>% mutate(mean = round(mean, digits = 3)), by = "assembly")
+  list_headings <- c(list_headings, "Avg Correct")
+  list_base_colors <- c(list_base_colors, green)
+
+  # join dnadiff results for each reference
+  df.out <- df.out %>%
+    left_join(df.dnadiff %>% filter(reference == i) %>% select(assembly, AvgIdentity, TotalIndels), by = "assembly")
+  list_headings <- c(list_headings, "ANI", "Indels")
+  list_base_colors <- c(list_base_colors, green, red)
+
+  # join nucdiff results for each reference
+  df.out <- df.out %>%
+    left_join(df.nucdiff %>% filter(reference == i) %>% select(assembly, Insertions, Deletions, Substitutions), by = "assembly")
+  list_headings <- c(list_headings, "Ins", "Del", "Sub")
+  list_base_colors <- c(list_base_colors, red, red, red)
+}
+
+list_th_tool_names_prot <- function(x) { htmltools::withTags(th("IDEEL reference", colspan=2)) }
+list_th_tool_names <- function(x) { htmltools::withTags(list(th("assess assembly", colspan=2, style = "white-space:wrap;"), th("assess homopolymers", colspan=1, style = "white-space:wrap;"), th("dnadiff", colspan=2), th("nucdiff", colspan=3))) }
+
+make_th_ref_prot <- function(x) { htmltools::withTags(th(x, colspan = 2)) }
+make_th_ref <- function(x) { htmltools::withTags(th(x, colspan = 8)) }
+make_th <- function(x) { htmltools::withTags(th(x)) }
+
+# make a table container with custom headings
+sketch <- htmltools::withTags(table(
+  class = 'display',
+  thead(
+    # first row has reference names
+    tr(
+      th(colspan = 4, "", style = "background-color: white;"),
+      lapply(list_ref_protein, make_th_ref_prot),
+      lapply(list_ref, make_th_ref)
+    ),
+    # second row has tool names
+    tr(
+      th("", style = "background-color: white;"),
+      th("BUSCO"),
+      th("IDEEL Uniprot", colspan = 2),
+      lapply(list_ref_protein, list_th_tool_names_prot), # just use lapply() for calling list_th_tool_names_prot() length(list_ref_protein) times
+      lapply(list_ref, list_th_tool_names)
+    ),
+    #third row has actual column names
+    tr(
+      lapply(list_headings, make_th)
+    )
+  )
+))
+
+dt <- df.out %>%
+  DT::datatable(elementId = "dt_summary", container = sketch, colnames = list_headings, escape = FALSE, rownames = FALSE, class="compact hover", extensions = "FixedColumns",
+               options = list(scrollX = TRUE, fixedColumns = list(leftColumns = 1), pageLength = 1000, searchHighlight = TRUE, paginate = FALSE, lengthChange = FALSE, fixedHeader = TRUE, order = list(list(0, 'asc')))) %>%
+  formatStyle(names(df.out), 'font-size' = '90%') %>%
+  formatStyle(names(df.out), 'vertical-align' = 'top')
+
+# to better highlight the highest value in each column:
+# max value gets alpha = 1.0, lower values get alpha from 0 to 0.7
+# for red colors, the alpha values should be 0 for min() and 0.2 to 1.0 for 2nd lowest to max
+
+alpha_green <- seq(0, 0.7, length.out = 10)
+alpha_red <- seq(0.3, 1.0, length.out = 10)
+#i <- 11
+for (i in 2:ncol(df.out)) {
+  values <- df.out[[i]]
+  n <- length(unique(values))
+  if(list_base_colors[[i]] == green) {
+    second_highest_value <- sort(unique(values))[n-1]
+    list_breaks <- seq(min(values), second_highest_value, length.out = 10)
+    list_colors <- paste0("rgba(", list_base_colors[[i]],", ", c(alpha_green, 1.0), ")")
+  } else {
+    second_lowest_value <- sort(unique(values))[2]
+    list_breaks <- seq(second_lowest_value, max(values), length.out = 10) - 0.00001
+    list_colors <- paste0("rgba(", list_base_colors[[i]],", ", c(0.0, alpha_red), ")")
+  }
+
+  dt <- DT::formatStyle(dt, i, backgroundColor = DT::styleInterval(list_breaks, list_colors))
+}
+dt
+```
+
+
+
+
+
+
+
