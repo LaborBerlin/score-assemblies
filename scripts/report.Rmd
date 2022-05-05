@@ -143,7 +143,8 @@ color_dt(dt, 3:4, c(green, red), df.assess_assembly)
 
 ```{r pomoxis_assses_homopolymers, eval=do_reference_genomes}
 asis_output("The [pomoxis](https://github.com/nanoporetech/pomoxis) tool _assess_homopolymers_ compares the assembly to a reference genome and calculates the error rate for each homopolymer length.  \n")
-asis_output("The table shows the rates of correct homopolymers of length 3 to 8 for the four bases A, C, G, and T as well as the mean of all values in the last column. NB: This mean is a bit stupid. For example, if there only two homopolymers of length 8 and one is wrong, the rate would be 0.5 for length 8 and this 0.5 will go into the mean with equal weight as the other lengths, overly drawing the mean down.\n")
+asis_output("The table shows the rates of correct homopolymers of length 3 to 8 for the four bases A, C, G, and T as well as the mean of all values in the last column.  \nNB: This mean is a bit stupid. For example, if there only two homopolymers of length 8 and one is wrong, the rate would be 0.5 for length 8 and this 0.5 will go into the mean with equal weight as the other lengths, overly drawing the mean down.  \n")
+asis_output("Assembly names link to pomoxis plot for error rates of each base.\n")
 
 filename_assess_homopolymers_all_correct_len_tsv <- "pomoxis/assess_homopolymers_all_correct_len.tsv"
 
@@ -167,10 +168,11 @@ df.single_nuc <- df.assess_homopolymers %>%
   mutate(mean = round(mean, 4))
 
 dt <- df.single_nuc %>%
+  mutate(assembly = paste0('<a href="pomoxis/', assembly, '/assess_homopolymers/', assembly, '_', reference, '_count/hp_correct_vs_len.png">', assembly, '</a>')) %>%
   DT::datatable(escape = FALSE, rownames = FALSE, class="compact hover",
                options = list(pageLength = 10, searchHighlight = TRUE, paginate = TRUE, lengthChange = FALSE, fixedHeader = TRUE, order = list(list(8, 'desc'), list(0, 'asc')))) %>%
   formatStyle(names(df.single_nuc), 'font-size' = '90%') %>%
-  formatRound(3:9, digits = 6)
+  formatRound(3:9, digits = 4)
 
 color_dt(dt, 3:9, rep(green,7), df.single_nuc)
 ```
