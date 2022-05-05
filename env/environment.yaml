@@ -3,7 +3,6 @@ channels:
   - conda-forge
   - bioconda
   - defaults
-  - anaconda
 dependencies:
   - bioconda::pomoxis=0.3.2
   - bioconda::busco=5.2.2
@@ -14,10 +13,3 @@ dependencies:
   - bioconda::diamond=0.9.30
   - bioconda::prodigal=2.6.3
   - bioconda::nucdiff=2.0.2
-  - conda-forge::r-tidyverse
-  - conda-forge::r-base
-  - conda-forge::r-tidytext
-  - conda-forge::r-dt
-  - conda-forge::r-knitr
-  - conda-forge::r-rmarkdown
-  - conda-forge::r-markdown

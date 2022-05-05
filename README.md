@@ -48,7 +48,7 @@ NB: The fasta files need to have the `.fa` extension.
 
 Run workflow in that folder, e.g. with 20 threads:
 ```
-snakemake -s /opt/software/score-assemblies/Snakefile --cores 20
+snakemake -s /opt/software/score-assemblies/Snakefile --cores 20 --use-conda
 ```
 
 If no references are supplied, then only ideel and BUSCO are done.

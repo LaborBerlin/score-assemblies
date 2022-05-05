@@ -391,13 +391,14 @@ rule diamond_ref:
 	log: "log/ideel/diamond-ref/{ref}_{id}.log"
 	shell:
 		"""
-		diamond blastp --threads {threads} --max-target-seqs 1 --db {input.db} --query {input.proteins} --outfmt 6 qlen slen --out {output} >{log} 2>&1
+		diamond blastp --threads {threads} --max-target-seqs 1 --db {input.db} --query {input.proteins} --outfmt 6 qlen slen sseqid --out {output} >{log} 2>&1
 		"""
 # -------------------------------------------------------------------------------------------------------------------------------------------
 # plots
 # -------------------------------------------------------------------------------------------------------------------------------------------
 
 rule plot_assess_assembly:
+	conda: "env/env-r.yaml"
 	input:
 		"pomoxis/assess_assembly_all_scores.tsv"
 	output:
@@ -405,6 +406,7 @@ rule plot_assess_assembly:
 	script: "scripts/plot-assess_assembly.R"
 
 rule plot_asses_homopolymers:
+	conda: "env/env-r.yaml"
 	input:
 		"pomoxis/assess_homopolymers_all_correct_len.tsv"
 	output:
@@ -412,6 +414,7 @@ rule plot_asses_homopolymers:
 	script: "scripts/plot-assess_homopolymers.R"
 
 rule plot_busco:
+	conda: "env/env-r.yaml"
 	input:
 		"busco/all_stats.tsv"
 	output:
@@ -419,6 +422,7 @@ rule plot_busco:
 	script: "scripts/plot-busco.R"
 
 rule plot_dnadiff:
+	conda: "env/env-r.yaml"
 	input:
 		"dnadiff/all_stats.tsv"
 	output:
@@ -426,6 +430,7 @@ rule plot_dnadiff:
 	script: "scripts/plot-dnadiff.R"
 
 rule plot_nucdiff:
+	conda: "env/env-r.yaml"
 	input:
 		"nucdiff/all_stats.tsv"
 	output:
@@ -433,6 +438,7 @@ rule plot_nucdiff:
 	script: "scripts/plot-nucdiff.R"
 
 rule plot_ideel:
+	conda: "env/env-r.yaml"
 	input:
 		list_ideel_ref_tsv,
 		list_ideel_uniprot_tsv
@@ -442,6 +448,7 @@ rule plot_ideel:
 	script: "scripts/plot-ideel.R"
 
 rule report_html:
+	conda: "env/env-r.yaml"
 	input:
 		"busco/all_stats.tsv",
 		list_ideel_uniprot_tsv,
