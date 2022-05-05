@@ -9,6 +9,7 @@ The workflow includes the following programs:
 * [QUAST](http://quast.sourceforge.net/quast)
 * [BUSCO](https://busco.ezlab.org/)
 * [ideel](https://github.com/mw55309/ideel/), which uses [prodigal](https://github.com/hyattpd/Prodigal) and [diamond](https://github.com/bbuchfink/diamond)
+* [bakta](https://github.com/oschwengers/bakta)
 
 ## Installation
 Clone repository, for example:
@@ -17,7 +18,7 @@ git clone https://github.com/pmenzel/score-assemblies.git /opt/software/score-as
 ```
 Create a new conda environment containing all necessary programs:
 ```
-conda env create -n score-assemblies --file /opt/software/score-assemblies/environment.yaml
+conda env create -n score-assemblies --file /opt/software/score-assemblies/env/environment.yaml
 ```
 and activate the environment:
 ```
@@ -104,6 +105,14 @@ for each reference in `nucdiff/<reference>_nucdiff_stats.pdf`.
 
 One QUAST report is generated for each reference genome, containing the results for all assemblies.
 The report files are located in `quast/<reference>/report.html`.
+
+#### bakta
+
+bakta is only run when specified as extra config argument in the snakemake call:
+```
+snakemake -s /opt/software/score-assemblies/Snakefile --cores 20 --use-conda --config busco_lineage=bacillales bakta=1
+```
+NB: It takes some time to download the bakta database and run bakta on all assemblies.
 
 #### ideel
 

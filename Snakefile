@@ -7,6 +7,7 @@ report_rmd = snake_dir + "/scripts/report.Rmd"
 workflow.global_resources['wget_busco'] = 1
 
 busco_lineage = config.get('busco_lineage', 'bacteria')
+run_bakta = config.get('bakta', '0')
 
 wildcard_constraints:
   id = "[^/\\\\]+",
@@ -67,6 +68,10 @@ list_busco_tsv = expand("busco/{id}/short_summary.specific.{blin}_odb10.{id}.tsv
 list_prodigal_proteins = expand("ideel/prodigal/{id}.faa", id=assemblies)
 list_ideel_uniprot_tsv = expand("ideel/diamond/{id}.tsv", id=assemblies)
 
+list_bakta_out = []
+if run_bakta == 1:
+	list_bakta_out = expand("bakta/{id}/{id}.txt", id=assemblies)
+
 rule all:
 	input:
 		list_assess_assembly_summ,
@@ -80,6 +85,7 @@ rule all:
 		list_busco_tsv,
 		"busco/all_stats.tsv",
 		"busco/busco_stats.pdf",
+		list_bakta_out,
 		list_quast_report,
 		list_dnadiff_report,
 		list_dnadiff,
@@ -334,6 +340,33 @@ rule diamond:
 		diamond blastp --threads {threads} --max-target-seqs 1 --db {input.db} --query {input.proteins} --outfmt 6 qlen slen --out {output} >{log} 2>&1
 		"""
 
+# -------------------------------------------------------------------------------------------------------------------------------------------
+# bakta
+# -------------------------------------------------------------------------------------------------------------------------------------------
+rule download_bakta_db:
+	conda: "env/env-bakta.yaml"
+	priority: 10
+	output: "bakta/db/version.json"
+	log: "log/bakta/download.log"
+	shell:
+		"""
+		wget -N -P bakta https://jlubox.uni-giessen.de/dl/fiWhS6LJi8AizXvspaRxRzPN/db.tar.gz >{log} 2>&1
+		tar --directory bakta -xf bakta/db.tar.gz >{log} 2>&1
+		amrfinder_update --force_update --database bakta/db/amrfinderplus-db/ >{log} 2>&1
+		"""
+
+rule bakta:
+	conda: "env/env-bakta.yaml"
+	threads: 5
+	input:
+		fa = "assemblies/{id}.fa",
+		db = "bakta/db/version.json"
+	output: "bakta/{id}/{id}.txt"
+	log: "log/bakta/{id}.log"
+	shell:
+		"""
+		bakta --db bakta/db --verbose --output bakta/{wildcards.id} --prefix {wildcards.id} --threads {threads} {input.fa} >{log} 2>&1
+		"""
 # -------------------------------------------------------------------------------------------------------------------------------------------
 # protein comparison to reference genome
 # -------------------------------------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,8 @@
+name: score-assemblies-bakta
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+  - anaconda
+dependencies:
+  - bioconda::bakta=1.4.0
