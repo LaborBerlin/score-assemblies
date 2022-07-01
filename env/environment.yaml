@@ -13,3 +13,4 @@ dependencies:
   - bioconda::diamond=0.9.30
   - bioconda::prodigal=2.6.3
   - bioconda::nucdiff=2.0.2
+  - bioconda::seqkit=2.2.0

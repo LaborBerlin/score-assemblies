@@ -229,10 +229,30 @@ color_dt(dt, c(3,4,5), c(red,red, red), df.nucdiff)
 
 ## IDEEL
 
+### ORF prediction with Prodigal
+
+ORFs are predicted in each assembly using Prodigal.
+
+```{r}
+fname_prodigal_stats <- "ideel/prodigal_stats.tsv"
+
+df.prodigal_stats <- read_tsv(fname_prodigal_stats, col_names = TRUE, col_types = "fcciiidi") %>%
+    mutate(assembly = str_remove(file, "^ideel/prodigal/")) %>%
+    mutate(assembly = str_remove(assembly, "\\.faa")) %>%
+    select(assembly, num_seqs, min_len, avg_len, max_len, sum_len)
+
+dt <- df.prodigal_stats %>%
+  DT::datatable(escape = FALSE, rownames = FALSE, class="compact hover",
+                options = list(pageLength = 10, searchHighlight = TRUE, paginate = TRUE, lengthChange = FALSE, fixedHeader = TRUE, order = list(list(3, 'desc'), list(0, 'asc')))) %>%
+  formatStyle(names(df.prodigal_stats), 'font-size' = '90%')
+
+color_dt(dt, 2:6, c(green, green, green, green, green), df.prodigal_stats)
+```
+
 ### Comparison with Uniprot Sprot database
 
-ORFs are predicted in each assembly using Prodigal, which are then searched against die Uniprot SPROT database using diamond.
-Measured is the fraction of predicted ORFS that were ≥95% the length of their best-matching protein sequence in the database (higher fractions being better).
+Predicted ORFs are searched against die Uniprot Sprot database using diamond.
+Measured is the number of ORFs with a database match, the fraction of ORFs that have the same length or ≥95% the length of the best-matching database sequence (higher fractions being better).
 
 ```{r}
 dir_ideel_diamond <- "ideel/diamond/"
@@ -259,7 +279,7 @@ df.ideel_uniprot <- df.all %>%
     n_ORFs = n(),
     n_full_length_ORFs = sum(qlen == slen),
     n_95perc_ORFs = sum(qlen >= 0.95 * slen)
-  ) %>% 
+  ) %>%
   ungroup()
 
 dt <- df.ideel_uniprot %>%
@@ -287,8 +307,8 @@ p
 ```{r eval=do_reference_proteomes}
 asis_output("### Comparison with reference proteomes\n")
 
-asis_output("ORFs are predicted in each assembly using Prodigal, which are then searched against the provided reference protein sequences using diamond.  \n")
-asis_output("Measured is the number and fraction of predicted ORFS, which have the same length as their best-matching reference protein sequence.\n")
+asis_output("Predicted ORFs are searched against the provided reference protein sequences using diamond.  \n")
+asis_output("Measured is the number of ORFs with a database match, the fraction of ORFs that have the same length or ≥95% the length of the best-matching database sequence (higher fractions being better)")
 
 df.ideel_ref <- data.frame(assembly = character(), reference = character(), n_seq_ref = integer(), n_ORFs = integer(), n_unique_ssid = integer(), n_full_length_ORFs = integer(), n_min95perc_ORFs = integer())
 
@@ -303,14 +323,14 @@ for (r in seq_along(ref_list)) {
 	for (i in seq_along(filelist)) {
 		filename <- paste0(dir_ideel_diamond_ref, "/", ref, "/", filelist[[i]])
 		df <- read_tsv(filename, col_names = c("qlen", "slen", "sseqid"),	col_types = "iic")
-		
+
 		n_total <- df %>% nrow()
 	  n_same_len <- df %>% filter(slen == qlen) %>% nrow()
 	  n_min95perc_len <- df %>% filter(qlen >= 0.95 * slen) %>% nrow()
 	  n_unique_ssid <- df %>% pull(sseqid) %>% unique() %>% length()
-	  
-  	assembly <- filelist[[i]] %>% str_remove("\\.tsv") %>% str_remove(paste0("_", ref))
-	
+
+	assembly <- filelist[[i]] %>% str_remove("\\.tsv") %>% str_remove(paste0("_", ref))
+
   	df.ideel_ref <- df.ideel_ref %>% add_row(reference = ref, assembly = assembly, n_seq_ref = len_faa_ref, n_ORFs = n_total, n_unique_ssid = n_unique_ssid, n_full_length_ORFs = n_same_len, n_min95perc_ORFs = n_min95perc_len)
 	}
 }

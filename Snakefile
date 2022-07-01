@@ -98,6 +98,7 @@ rule all:
 		"ideel/uniprot/uniprot_sprot.fasta.gz",
 		"ideel/uniprot/uniprot_sprot.dmnd",
 		list_prodigal_proteins,
+		"ideel/prodigal_stats.tsv",
 		list_ideel_uniprot_tsv,
 		"ideel/ideel_stats.pdf",
 		list_ideel_ref_tsv,
@@ -326,6 +327,16 @@ rule prodigal:
 		prodigal -a {output} -i {input} >{log} 2>&1
 		# remove stop codon (*) from end of sequences
 		sed -i 's/*$//' {output}
+		"""
+
+rule prodigal_stats:
+  threads: 1
+	input: list_prodigal_proteins
+	output: "ideel/prodigal_stats.tsv"
+	log: "log/ideel/prodigal_stats.log"
+	shell:
+		"""
+		seqkit stats -T -t protein {input} >{output} 2>{log}
 		"""
 
 rule diamond:
