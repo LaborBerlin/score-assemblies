@@ -12,20 +12,16 @@ df <- read_tsv(filename_busco_stats_tsv,
   gather(key = "measure", value = "percent", -assembly, -n)
 
 p <- df %>%
-  ggplot(aes(x = reorder(assembly, percent, max), y = percent)) +
-  geom_line(aes(group = measure, color = measure), size = 1) +
+  ggplot(aes(y = reorder(assembly, percent, max), x = percent)) +
+  geom_text(data = filter(df, measure == "Complete"), aes(color = measure, label = percent), size = 2.5, hjust=1.4) +
   geom_point(size = 2, aes(color = measure)) +
   theme_bw() +
   theme(legend.position = "bottom") +
-  labs(title = "BUSCO", caption = "from BUSCO output files short_summary.specific.*") +
-  ylab("Percent") +
-  xlab("") +
-  ylim(0, 100) +
-  theme(
-    panel.grid.major.x = element_blank(),
-    strip.background = element_rect(fill = "grey90"),
-    axis.text.x = element_text(angle = 45, hjust = 1)
-  ) +
+  labs(title = "BUSCO") +
+  xlab("Percent") +
+  ylab("") +
+  xlim(0, 100) +
+  theme(axis.text.y = element_text(size = rel(0.75))) +
   scale_color_discrete(guide = guide_legend(title = ""))
 
 filename_out <- filename_busco_pdf

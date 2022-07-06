@@ -46,7 +46,6 @@ if len(references) > 0:
 	list_assess_assembly_meanQ_pdf = expand("pomoxis/{ref}_assess_assembly_all_meanQ.pdf", ref=references)
 	list_assess_homopolymers_rel_len = expand("pomoxis/{id}/assess_homopolymers/{id}_{ref}_rel_len.tsv", id=assemblies, ref=references)
 	list_assess_homopolymers_correct_len_tsv = expand("pomoxis/{id}/assess_homopolymers/{id}_{ref}_correct_len.tsv", id=assemblies, ref=references)
-	list_assess_homopolymers_correct_len_pdf = expand("pomoxis/{ref}_assess_homopolymers_all_correct_len.pdf", ref=references)
 	list_pomoxis = ["pomoxis/assess_assembly_all_scores.tsv", "pomoxis/assess_homopolymers_all_rel_len.tsv", "pomoxis/assess_homopolymers_all_correct_len.tsv" ]
 	list_quast_report = expand("quast/{ref}/report.html", ref=references)
 	list_dnadiff_report = expand("dnadiff/{ref}/{id}-dnadiff.report", id=assemblies, ref=references)
@@ -60,7 +59,7 @@ if len(references) > 0:
 
 if len(references_protein) > 0:
 	list_ideel_ref_tsv = expand("ideel/diamond-ref/{ref}/{id}_{ref}.tsv", id=assemblies, ref=references_protein)
-	list_ideel_ref_pdf = expand("ideel/{ref}_ideel_stats.pdf", ref=references_protein)
+	list_ideel_ref_pdf = expand("ideel/{ref}_ideel_{type}.pdf", ref=references_protein, type=['histograms', 'boxplots'])
 
 list_busco_out = expand("busco/{id}/short_summary.specific.{blin}_odb10.{id}.txt", id=assemblies, blin=busco_lineage)
 list_busco_tsv = expand("busco/{id}/short_summary.specific.{blin}_odb10.{id}.tsv", id=assemblies, blin=busco_lineage)
@@ -79,7 +78,6 @@ rule all:
 		list_assess_assembly_meanQ_pdf,
 		list_assess_homopolymers_rel_len,
 		list_assess_homopolymers_correct_len_tsv,
-		list_assess_homopolymers_correct_len_pdf,
 		list_pomoxis,
 		list_busco_out,
 		list_busco_tsv,
@@ -100,7 +98,8 @@ rule all:
 		list_prodigal_proteins,
 		"ideel/prodigal_stats.tsv",
 		list_ideel_uniprot_tsv,
-		"ideel/ideel_stats.pdf",
+		"ideel/ideel_uniprot_histograms.pdf",
+		"ideel/ideel_uniprot_boxplots.pdf",
 		list_ideel_ref_tsv,
 		list_ideel_ref_pdf,
 		"report.html"
@@ -416,13 +415,13 @@ rule plot_assess_assembly:
 		list_assess_assembly_meanQ_pdf
 	script: "scripts/plot-assess_assembly.R"
 
-rule plot_asses_homopolymers:
-	conda: "env/env-r.yaml"
-	input:
-		"pomoxis/assess_homopolymers_all_correct_len.tsv"
-	output:
-		list_assess_homopolymers_correct_len_pdf,
-	script: "scripts/plot-assess_homopolymers.R"
+#rule plot_asses_homopolymers:
+#	conda: "env/env-r.yaml"
+#	input:
+#		"pomoxis/assess_homopolymers_all_correct_len.tsv"
+#	output:
+#		list_assess_homopolymers_correct_len_pdf,
+#	script: "scripts/plot-assess_homopolymers.R"
 
 rule plot_busco:
 	conda: "env/env-r.yaml"
@@ -454,7 +453,8 @@ rule plot_ideel:
 		list_ideel_ref_tsv,
 		list_ideel_uniprot_tsv
 	output:
-		"ideel/ideel_stats.pdf",
+		"ideel/ideel_uniprot_histograms.pdf",
+		"ideel/ideel_uniprot_boxplots.pdf",
 		list_ideel_ref_pdf
 	script: "scripts/plot-ideel.R"
 

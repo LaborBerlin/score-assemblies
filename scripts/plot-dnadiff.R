@@ -16,22 +16,19 @@ for (i_ref in unique(df$reference)) {
     filter(reference == i_ref)
   
   p <- df.plot %>%
-    mutate(assembly = reorder_within(assembly, value, measure, FUN = min)) %>%
-    ggplot(aes(x = assembly, y = value)) +
-    geom_line(aes(group = reference), color = "grey70", size = 1) +
-    geom_point(shape = 21, size = 3, fill = "deepskyblue3") +
-    scale_x_reordered() +
-    facet_wrap(~measure, scales = "free") +
+    group_by(measure) %>% 
+      mutate(assembly = fct_reorder(assembly, value)) %>%
+    ungroup() %>%
+    ggplot(aes(y = assembly, x = value)) +
+    geom_point(shape = 21, size = 2, fill = "deepskyblue3") +
+    facet_wrap(~ measure, scales = "free_x") +
     theme_bw() +
     theme(legend.position = "bottom") +
-    labs(title = "dnadiff", subtitle = paste("Reference:", i_ref), caption = "from dnadiff output files *.report") +
+    labs(title = "dnadiff", subtitle = paste("Reference:", i_ref)) +
     ylab("") +
     xlab("") +
-    theme(
-      panel.grid.major.x = element_blank(),
-      strip.background = element_rect(fill = "grey90"),
-      axis.text.x = element_text(angle = 45, hjust = 1)
-    )
+    theme(axis.text.y = element_text(size = rel(0.75)))
+
   filename_out <- paste0("dnadiff/", i_ref, filename_suffix_dnadiff_stats_tsv)
   writeLines(paste("Saving plot to", filename_out))
   ggsave(p, filename = filename_out)

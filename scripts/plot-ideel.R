@@ -1,10 +1,10 @@
 suppressPackageStartupMessages(library(tidyverse))
 
-
 # diamond for uniprot
 
 dir_ideel_diamond <- "ideel/diamond/"
-filename_ideel_pdf <- "ideel/ideel_stats.pdf"
+filename_ideel_hist_pdf <- "ideel/ideel_uniprot_histograms.pdf"
+filename_ideel_box_pdf <- "ideel/ideel_uniprot_boxplots.pdf"
 
 filelist <- list.files(path = dir_ideel_diamond, pattern = ".*\\.tsv", recursive = FALSE, full.names = FALSE)
 df_list <- vector("list", length(filelist))
@@ -26,19 +26,37 @@ df.all <- dplyr::bind_rows(df_list) %>% mutate(assembly = factor(assembly))
 p <- ggplot(df.all, aes(x = SCov)) +
   geom_histogram(aes(color=assembly, fill=assembly), alpha = 0.8, position = "identity", binwidth = 0.01, size=0.2) +
   #geom_density(aes(fill = assembly), alpha = 0.4, color = "grey40") +
-  facet_wrap(~assembly, scales = "free_x") +
+  facet_wrap(~assembly) +
   theme_bw() +
-  ggtitle(paste("ideel")) +
-  theme(legend.position = "bottom") +
+  ggtitle(paste("ideel with Uniprot Sprot")) +
   ylab("") + xlab("qlen / slen") +
-  xlim(0, 1.5) +
+  xlim(0.5, 1.5) +
   scale_color_discrete(guide = FALSE) +
   scale_fill_discrete(guide = FALSE) +
-  theme(strip.text.x = element_text(size = 6))
+  theme(strip.text.x = element_text(size = 6)) +
+  theme(axis.text = element_text(size = rel(0.75)))
 
-filename_out <- filename_ideel_pdf
+filename_out <- filename_ideel_hist_pdf
 writeLines(paste("Saving plot to", filename_out))
 ggsave(p, filename = filename_out)
+
+
+p.box <- df.all %>%
+  mutate(assembly = fct_reorder(assembly, SCov, mean)) %>%
+  ggplot(aes(y = assembly, x = SCov)) +
+  geom_boxplot(outlier.shape = NA) +
+  #geom_histogram(aes(color=assembly, fill=assembly), alpha = 0.8, position = "identity", binwidth = 0.01, size=0.2) +
+  #geom_density(aes(fill = assembly), alpha = 0.4, color = "grey40") +
+  #facet_wrap(~assembly) +
+  theme_bw() +
+  ggtitle(paste("ideel with Uniprot Sprot")) +
+  ylab("") + xlab("qlen / slen") +
+  xlim(0.5, 1.5) +
+  theme(axis.text = element_text(size = rel(0.75)))
+
+filename_out <- filename_ideel_box_pdf
+writeLines(paste("Saving plot to", filename_out))
+ggsave(p.box, filename = filename_out)
 
 
 # diamond for references
@@ -48,8 +66,6 @@ dir_ideel_diamond_ref <- "ideel/diamond-ref/"
 ref_list <- list.dirs(path = dir_ideel_diamond_ref, recursive = FALSE, full.names = FALSE)
 
 for (r in seq_along(ref_list)) {
-
-
 	filelist <- list.files(path = paste0(dir_ideel_diamond_ref,"/", ref_list[[r]]), pattern = ".*\\.tsv", recursive = FALSE, full.names = FALSE)
 	df_list <- vector("list", length(filelist))
 
@@ -73,34 +89,30 @@ for (r in seq_along(ref_list)) {
 		#geom_density(aes(fill = assembly), alpha = 0.4, color = "grey40") +
 		facet_wrap(~assembly, scales = "free_x") +
 		theme_bw() +
-		ggtitle(paste("ideel")) +
-		theme(legend.position = "bottom") +
+		labs(title = "ideel", subtitle = paste("Reference:", ref_list[[r]])) +
 		ylab("") + xlab("qlen / slen") +
-		xlim(0, 1.5) +
+		xlim(0.5, 1.5) +
 		scale_color_discrete(guide = FALSE) +
 		scale_fill_discrete(guide = FALSE) +
-		theme(strip.text.x = element_text(size = 4))
+		theme(strip.text.x = element_text(size = 6)) +
+	  theme(axis.text = element_text(size = rel(0.75)))
 
-	filename_pdf <- paste0("ideel/", ref_list[[r]], "_ideel_stats.pdf")
+	filename_pdf <- paste0("ideel/", ref_list[[r]], "_ideel_histograms.pdf")
 	writeLines(paste("Saving plot to", filename_pdf))
 	ggsave(p, filename = filename_pdf)
-
-	p <- df.all %>%
-		filter(slen == qlen) %>%
-		group_by(assembly) %>%
-			summarize(n = n()) %>%
-		ungroup() %>%
-		ggplot(aes(x=reorder(assembly,n), y=n)) +
-		geom_point() +
-		geom_text(aes(label=n), vjust = 1.5, size = 2.5) +
-		coord_flip() +
-		xlab("") +
-		labs(title=ref_list[[r]], subtitle = "number of proteins with qlen = slen") +
-		theme_bw()
-
-	filename_pdf <- paste0("ideel/", ref_list[[r]], "_samelen.pdf")
+	
+	p.box <- df.all %>%
+	  mutate(assembly = fct_reorder(assembly, SCov, mean)) %>%
+	  ggplot(aes(y = assembly, x = SCov)) +
+	  geom_boxplot(outlier.shape = NA) +
+	  theme_bw() +
+	  labs(title = "ideel", subtitle = paste("Reference:", ref_list[[r]])) +
+	  ylab("") + xlab("qlen / slen") +
+	  xlim(0.5, 1.5) +
+	  theme(axis.text.y = element_text(size = rel(0.75)))
+	
+	filename_pdf <- paste0("ideel/", ref_list[[r]], "_ideel_boxplots.pdf")
 	writeLines(paste("Saving plot to", filename_pdf))
-	ggsave(p, filename = filename_pdf)
-
-
+	ggsave(p.box, filename = filename_pdf)
+	
 }
