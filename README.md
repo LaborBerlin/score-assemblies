@@ -114,4 +114,4 @@ Additionally, diamond alignments are done between the predicted ORFs and the sup
 All measurements are summarized in a HTML page in `report.html`.
 
 ### Example report
-![Example report](example/example_report.png?raw=true)
+![Example report](example/example-report.png?raw=true)
