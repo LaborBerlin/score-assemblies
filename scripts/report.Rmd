@@ -284,7 +284,7 @@ df.ideel_uniprot <- df.all %>%
 
 dt <- df.ideel_uniprot %>%
   DT::datatable(escape = FALSE, rownames = FALSE, class="compact hover",
-                options = list(pageLength = 10, searchHighlight = TRUE, paginate = TRUE, lengthChange = FALSE, fixedHeader = TRUE, order = list(list(3, 'desc'), list(0, 'asc')))) %>%
+                options = list(pageLength = 10, searchHighlight = TRUE, paginate = TRUE, lengthChange = FALSE, fixedHeader = TRUE, order = list(list(2, 'desc'), list(3, 'desc'), list(0, 'asc')))) %>%
   formatStyle(names(df.ideel_uniprot), 'font-size' = '90%')
 
 color_dt(dt, 2:4, c(green, green, green), df.ideel_uniprot)
