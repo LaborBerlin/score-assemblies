@@ -441,17 +441,22 @@ alpha_green <- seq(0, 0.7, length.out = 10)
 alpha_red <- seq(0.3, 1.0, length.out = 10)
 #i <- 11
 for (i in 2:ncol(df.out)) {
-  values <- df.out[[i]]
-  n <- length(unique(values))
-  if(list_base_colors[[i]] == green) {
-    second_highest_value <- sort(unique(values))[n-1]
-    list_breaks <- seq(min(values), second_highest_value, length.out = 10)
-    list_colors <- paste0("rgba(", list_base_colors[[i]],", ", c(alpha_green, 1.0), ")")
-  } else {
-    second_lowest_value <- sort(unique(values))[2]
-    list_breaks <- seq(second_lowest_value, max(values), length.out = 10) - 0.0001
-    list_colors <- paste0("rgba(", list_base_colors[[i]],", ", c(0.0, alpha_red), ")")
-  }
+	values <- df.out[[i]]
+	n <- length(unique(values))
+	if(n == 1) { # only one value in whole column
+		list_breaks <- c(values[[1]])
+		list_colors <- rep(paste0("rgba(", list_base_colors[[i]],",1.0)"), 2)
+	} else {
+		if(list_base_colors[[i]] == green) {
+			second_highest_value <- sort(unique(values))[n-1]
+			list_breaks <- seq(min(values), second_highest_value, length.out = 10)
+			list_colors <- paste0("rgba(", list_base_colors[[i]],", ", c(alpha_green, 1.0), ")")
+		} else {
+			second_lowest_value <- sort(unique(values))[2]
+			list_breaks <- seq(second_lowest_value, max(values), length.out = 10) - 0.0001
+			list_colors <- paste0("rgba(", list_base_colors[[i]],", ", c(0.0, alpha_red), ")")
+		}
+	}
 
   dt <- DT::formatStyle(dt, i, backgroundColor = DT::styleInterval(list_breaks, list_colors))
 }
