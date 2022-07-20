@@ -1,6 +1,8 @@
 suppressPackageStartupMessages(library(tidyverse))
 
-filename_assess_assembly_all_scores_tsv <- "pomoxis/assess_assembly_all_scores.tsv"
+dir <- ifelse(!is.na(snakemake@params[['out_dir']]), snakemake@params[['out_dir']], '.')
+
+filename_assess_assembly_all_scores_tsv <- paste0(dir, "/pomoxis/assess_assembly_all_scores.tsv")
 filename_assess_assembly_all_meanQ_pdf <- "assess_assembly_all_meanQ.pdf"
 
 # plot assess_assembly mean Q scores for each assembly and reference
@@ -24,7 +26,7 @@ for (i_ref in unique(df$reference)) {
     xlab("Q-score ") +
     theme(axis.text = element_text(size = rel(0.75)))
   
-  filename_out <- paste0("pomoxis/", i_ref, "_", filename_assess_assembly_all_meanQ_pdf)
+  filename_out <- paste0(dir, "/pomoxis/", i_ref, "_", filename_assess_assembly_all_meanQ_pdf)
   writeLines(paste("Saving plot to", filename_out))
   ggsave(p, filename = filename_out)
 }

@@ -1,7 +1,9 @@
 suppressPackageStartupMessages(library(tidyverse))
 
-filename_busco_stats_tsv <- "busco/all_stats.tsv"
-filename_busco_pdf <- "busco/busco_stats.pdf"
+dir <- ifelse(!is.na(snakemake@params[['out_dir']]), snakemake@params[['out_dir']], '.')
+
+filename_busco_stats_tsv <- paste0(dir, "/busco/all_stats.tsv")
+filename_busco_pdf <- paste0(dir, "/busco/busco_stats.pdf")
 
 # plot busco
 

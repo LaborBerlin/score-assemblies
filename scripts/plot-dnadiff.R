@@ -1,7 +1,9 @@
 suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(tidytext))
 
-filename_dnadiff_stats_tsv <- "dnadiff/all_stats.tsv"
+dir <- ifelse(!is.na(snakemake@params[['out_dir']]), snakemake@params[['out_dir']], '.')
+
+filename_dnadiff_stats_tsv <- paste0(dir, "/dnadiff/all_stats.tsv")
 filename_suffix_dnadiff_stats_tsv <- "_dnadiff_stats.pdf"
 
 # plot dnadiff stats for each reference
@@ -29,7 +31,7 @@ for (i_ref in unique(df$reference)) {
     xlab("") +
     theme(axis.text.y = element_text(size = rel(0.75)))
 
-  filename_out <- paste0("dnadiff/", i_ref, filename_suffix_dnadiff_stats_tsv)
+  filename_out <- paste0(dir, "/dnadiff/", i_ref, filename_suffix_dnadiff_stats_tsv)
   writeLines(paste("Saving plot to", filename_out))
   ggsave(p, filename = filename_out)
 }

@@ -50,14 +50,18 @@ For example:
 ```
 NB: The assembly and reference fasta files need to have the `.fa` extension and protein reference fasta files need to have the extension `.faa`.
 
-To run the workflow in that folder, e.g. with 20 threads, use this command:
+This is the same folder structure used by [ont-assembly-snake](https://github.com/pmenzel/ont-assembly-snake), i.e. score-assemblies can be run directly in the same folder.
+
+To run the workflow, e.g. with 20 threads, use this command:
 ```
 snakemake -s /opt/software/score-assemblies/Snakefile --cores 20 --use-conda
 ```
 
-If no references are supplied, then only ideel and BUSCO are done.
+
+Output files of each program will be written to various folders in `score-assemblies-data/`.
 
 ## Modules
+If no references are supplied, then only ideel and BUSCO are done, otherwise
 score-assemblies will run these programs on each assembly:
 
 ### assess_assembly and assess_homopolymers
@@ -111,7 +115,7 @@ Additionally, diamond alignments are done between the predicted ORFs and the sup
 `ideel/<reference>_ideel_histograms.pdf` and `ideel/<reference>_ideel_boxplots.pdf.
 
 ## Summary report
-All measurements are summarized in a HTML page in `report.html`.
+All measurements are summarized in a HTML page in `score-assemblies-report.html`.
 
 ### Example report
 ![Example report](example/example-report.png?raw=true)

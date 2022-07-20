@@ -53,6 +53,8 @@ options(dplyr.summarise.inform = FALSE)
 green <- "100, 255, 100"
 red <- "255, 100, 100"
 
+out_dir <- args[2]
+
 path_references <- paste0(getwd(),'/references')
 path_references_protein <- paste0(getwd(),'/references-protein')
 do_reference_genomes <- dir.exists(path_references)
@@ -105,7 +107,7 @@ color_dt <- function(dt, col_range, base_colors, df) {
 ```{r quasts, eval=do_reference_genomes, results='asis'}
 cat("## Quast\n")
 for(r in list_ref) {
-  x <- paste0("* [Quast for ", r,"](quast/", r, "/report.html)\n")
+  x <- paste0("* [Quast for ", r,"](", out_dir, "/quast/", r, "/report.html)\n")
   cat(x)
 }
 ```
@@ -115,7 +117,7 @@ for(r in list_ref) {
 [BUSCO](https://busco.ezlab.org/) measures the percentage of complete, fragmented, or missing core genes that are usually present in bacterial clades.
 
 ```{r busco}
-filename_busco_stats_tsv <- "busco/all_stats.tsv"
+filename_busco_stats_tsv <- paste0(out_dir, "/busco/all_stats.tsv")
 
 df.busco <- read_tsv(filename_busco_stats_tsv, col_names = c("assembly", "% complete", "% fragmented", "% missing", "n"), col_types = "fdddd") %>%
   select(-n)
@@ -134,7 +136,7 @@ asis_output("## pomoxis\n")
 
 asis_output("The [pomoxis](https://github.com/nanoporetech/pomoxis) tool _assess_assembly_ compares the assembly to a reference genome resulting in a mean Q score and error rate over all sequences in the reference genome.\\n")
 
-filename_assess_assembly_all_scores_tsv <- "pomoxis/assess_assembly_all_scores.tsv"
+filename_assess_assembly_all_scores_tsv <- paste0(out_dir, "/pomoxis/assess_assembly_all_scores.tsv")
 df.assess_assembly <- read_tsv(filename_assess_assembly_all_scores_tsv, col_names = c("assembly", "reference", "Qscore", "percErr"), col_types = "ffdc") %>%
   mutate(percErr = parse_number(percErr))
 
@@ -152,7 +154,7 @@ asis_output("The [pomoxis](https://github.com/nanoporetech/pomoxis) tool _assess
 asis_output("The table shows the average rates of correct homopolymers of length 3 to 8 (longer homopolymers are ignored here) over the four bases A, C, G, and T as well as the mean of all those values in the last column.  \nNB: This mean is a bit stupid. For example, if there only two homopolymers of length 8 and one is wrong, the rate would be 0.5 for length 8 and this 0.5 will go into the mean with equal weight as the other lengths, overly drawing the mean down.  \n")
 asis_output("Assembly names link to pomoxis plot for error rates of each base.\n")
 
-filename_assess_homopolymers_all_correct_len_tsv <- "pomoxis/assess_homopolymers_all_correct_len.tsv"
+filename_assess_homopolymers_all_correct_len_tsv <- paste0(out_dir, "/pomoxis/assess_homopolymers_all_correct_len.tsv")
 
 df.assess_homopolymers <- read_tsv(filename_assess_homopolymers_all_correct_len_tsv,
   col_names = c("assembly", "reference", "rlen", "A", "C", "G", "T", "A_n", "C_n", "G_n", "T_n", "AT_n", "AT", "GC_n", "GC"),
@@ -180,7 +182,7 @@ df.single_nuc <- df.assess_homopolymers %>%
 n_value_cols <- ncol(df.single_nuc) - 2 # this should always be 8 as we filter longer homopolymers above
 
 dt <- df.single_nuc %>%
-  mutate(assembly = paste0('<a href="pomoxis/', assembly, '/assess_homopolymers/', assembly, '_', reference, '_count/hp_correct_vs_len.png">', assembly, '</a>')) %>%
+  mutate(assembly = paste0('<a href="', out_dir,'/pomoxis/', assembly, '/assess_homopolymers/', assembly, '_', reference, '_count/hp_correct_vs_len.png">', assembly, '</a>')) %>%
   DT::datatable(escape = FALSE, rownames = FALSE, class="compact hover",
                options = list(pageLength = 10, searchHighlight = TRUE, paginate = TRUE, lengthChange = FALSE, fixedHeader = TRUE, order = list(list(8, 'desc'), list(0, 'asc')))) %>%
   formatStyle(names(df.single_nuc), 'font-size' = '90%') %>%
@@ -195,7 +197,7 @@ asis_output("## dnadiff\n")
 
 asis_output("dnadiff from the [mummer](https://mummer4.github.io/index.html) package compares each assembly to the reference genomes and calculates an average identity and the number of indels.\n")
 
-filename_dnadiff_stats_tsv <- "dnadiff/all_stats.tsv"
+filename_dnadiff_stats_tsv <- paste0(out_dir, "/dnadiff/all_stats.tsv")
 df.dnadiff <- read_tsv(filename_dnadiff_stats_tsv, col_names = c("assembly", "reference", "measure", "value", "value2"), col_types = "fffdd") %>%
   pivot_wider(id_cols = c(assembly, reference), names_from = measure, values_from = value)
 
@@ -213,7 +215,7 @@ asis_output("## NucDiff\n")
 
 asis_output("[NucDiff](https://github.com/uio-cels/NucDiff/) compares each assembly to the reference genomes and calculates the number of insertions, deletions, and substitutions.\n")
 
-filename_nucdiff_stats_tsv <- "nucdiff/all_stats.tsv"
+filename_nucdiff_stats_tsv <- paste0(out_dir, "/nucdiff/all_stats.tsv")
 
 df.nucdiff <-df <- read_tsv(filename_nucdiff_stats_tsv, col_names = c("assembly", "reference", "measure", "value"), col_types = "fffd") %>%
   pivot_wider(id_cols = c(assembly, reference), names_from = measure, values_from = value)
@@ -234,7 +236,7 @@ color_dt(dt, c(3,4,5), c(red,red, red), df.nucdiff)
 ORFs are predicted in each assembly using Prodigal.
 
 ```{r}
-fname_prodigal_stats <- "ideel/prodigal_stats.tsv"
+fname_prodigal_stats <- paste0(out_dir, "/ideel/prodigal_stats.tsv")
 
 df.prodigal_stats <- read_tsv(fname_prodigal_stats, col_names = TRUE, col_types = "fcciiidi") %>%
     mutate(assembly = str_remove(file, "^ideel/prodigal/")) %>%
@@ -255,7 +257,7 @@ Predicted ORFs are searched against die Uniprot Sprot database using diamond.
 Measured is the number of ORFs with a database match, the fraction of ORFs that have the same length or ≥95% the length of the best-matching database sequence (higher fractions being better).
 
 ```{r}
-dir_ideel_diamond <- "ideel/diamond/"
+dir_ideel_diamond <- paste0(out_dir, "/ideel/diamond/")
 filelist <- list.files(path = dir_ideel_diamond, pattern = ".*\\.tsv", recursive = FALSE, full.names = FALSE)
 
 df_list <- vector("list", length(filelist))
@@ -312,7 +314,7 @@ asis_output("Measured is the number of ORFs with a database match, the fraction 
 
 df.ideel_ref <- data.frame(assembly = character(), reference = character(), n_seq_ref = integer(), n_ORFs = integer(), n_unique_ssid = integer(), n_full_length_ORFs = integer(), n_min95perc_ORFs = integer())
 
-dir_ideel_diamond_ref <- "ideel/diamond-ref/"
+dir_ideel_diamond_ref <- paste0(out_dir, "/ideel/diamond-ref/")
 ref_list <- list.dirs(path = dir_ideel_diamond_ref, recursive = FALSE, full.names = FALSE)
 for (r in seq_along(ref_list)) {
   ref <- ref_list[[r]]

@@ -1,10 +1,11 @@
 suppressPackageStartupMessages(library(tidyverse))
 
-# diamond for uniprot
+dir <- ifelse(!is.na(snakemake@params[['out_dir']]), snakemake@params[['out_dir']], '.')
 
-dir_ideel_diamond <- "ideel/diamond/"
-filename_ideel_hist_pdf <- "ideel/ideel_uniprot_histograms.pdf"
-filename_ideel_box_pdf <- "ideel/ideel_uniprot_boxplots.pdf"
+# diamond for uniprot -------------------------------------------------------------------------------------
+dir_ideel_diamond <- paste0(dir, "/ideel/diamond/")
+filename_ideel_hist_pdf <- paste0(dir, "/ideel/ideel_uniprot_histograms.pdf")
+filename_ideel_box_pdf <- paste0(dir, "/ideel/ideel_uniprot_boxplots.pdf")
 
 filelist <- list.files(path = dir_ideel_diamond, pattern = ".*\\.tsv", recursive = FALSE, full.names = FALSE)
 df_list <- vector("list", length(filelist))
@@ -59,9 +60,8 @@ writeLines(paste("Saving plot to", filename_out))
 ggsave(p.box, filename = filename_out)
 
 
-# diamond for references
-
-dir_ideel_diamond_ref <- "ideel/diamond-ref/"
+# diamond for references --------------------------------------------------------------------------------
+dir_ideel_diamond_ref <- paste0(dir, "/ideel/diamond-ref/")
 
 ref_list <- list.dirs(path = dir_ideel_diamond_ref, recursive = FALSE, full.names = FALSE)
 
@@ -97,7 +97,7 @@ for (r in seq_along(ref_list)) {
 		theme(strip.text.x = element_text(size = 6)) +
 	  theme(axis.text = element_text(size = rel(0.75)))
 
-	filename_pdf <- paste0("ideel/", ref_list[[r]], "_ideel_histograms.pdf")
+	filename_pdf <- paste0(dir, "/ideel/", ref_list[[r]], "_ideel_histograms.pdf")
 	writeLines(paste("Saving plot to", filename_pdf))
 	ggsave(p, filename = filename_pdf)
 	
@@ -111,7 +111,7 @@ for (r in seq_along(ref_list)) {
 	  xlim(0.5, 1.5) +
 	  theme(axis.text.y = element_text(size = rel(0.75)))
 	
-	filename_pdf <- paste0("ideel/", ref_list[[r]], "_ideel_boxplots.pdf")
+	filename_pdf <- paste0(dir, "/ideel/", ref_list[[r]], "_ideel_boxplots.pdf")
 	writeLines(paste("Saving plot to", filename_pdf))
 	ggsave(p.box, filename = filename_pdf)
 	
