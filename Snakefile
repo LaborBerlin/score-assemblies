@@ -464,6 +464,8 @@ rule report_html:
 		out_dir + "/busco/all_stats.tsv",
 		list_ideel_uniprot_tsv,
 		list_ideel_ref_tsv,
+		list_dnadiff,
+		list_nucdiff,
 		list_pomoxis
 	output:
 		"score-assemblies-report.html"
