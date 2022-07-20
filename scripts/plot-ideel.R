@@ -12,10 +12,10 @@ df_list <- vector("list", length(filelist))
 
 for (i in seq_along(filelist)) {
   filename <- paste0(dir_ideel_diamond, filelist[[i]])
-  df <- read_tsv(filename,
-    col_names = c("qlen", "slen"),
-    col_types = "ii"
-  ) %>%
+	df <- read_tsv(filename,
+									 col_names = c("qseqid", "sseqid", "qlen", "slen"),
+									 col_types = "ccii"
+    ) %>%
     mutate(assembly = filelist[[i]]) %>%
     mutate(assembly = str_remove(assembly, "\\.tsv")) %>%
     mutate(SCov = qlen / slen)
@@ -66,23 +66,20 @@ dir_ideel_diamond_ref <- paste0(dir, "/ideel/diamond-ref/")
 ref_list <- list.dirs(path = dir_ideel_diamond_ref, recursive = FALSE, full.names = FALSE)
 
 for (r in seq_along(ref_list)) {
-	filelist <- list.files(path = paste0(dir_ideel_diamond_ref,"/", ref_list[[r]]), pattern = ".*\\.tsv", recursive = FALSE, full.names = FALSE)
-	df_list <- vector("list", length(filelist))
+  filelist <- list.files(path = paste0(dir_ideel_diamond_ref,"/", ref_list[[r]]), pattern = ".*\\.tsv", recursive = FALSE, full.names = FALSE)
+  df_list <- vector("list", length(filelist))
 
-	for (i in seq_along(filelist)) {
-		filename <- paste0(dir_ideel_diamond_ref, "/", ref_list[[r]], "/", filelist[[i]])
-		df <- read_tsv(filename,
-			col_names = c("qlen", "slen"),
-			col_types = "ii"
-		) %>%
-			mutate(assembly = filelist[[i]]) %>%
-			mutate(assembly = str_remove(assembly, "\\.tsv")) %>%
-			mutate(assembly = str_remove(assembly, paste0("_",ref_list[[r]]))) %>%
-			mutate(SCov = qlen / slen)
+  for (i in seq_along(filelist)) {
+    filename <- paste0(dir_ideel_diamond_ref, "/", ref_list[[r]], "/", filelist[[i]])
+    df <- read_tsv(filename, col_names = c("qseqid", "sseqid", "qlen", "slen"), col_types = "ccii") %>%
+      mutate(assembly = filelist[[i]]) %>%
+      mutate(assembly = str_remove(assembly, "\\.tsv")) %>%
+      mutate(assembly = str_remove(assembly, paste0("_",ref_list[[r]]))) %>%
+      mutate(SCov = qlen / slen)
 
-		df_list[[i]] <- df
-	}
-	df.all <- dplyr::bind_rows(df_list) %>% mutate(assembly = factor(assembly))
+    df_list[[i]] <- df
+  }
+  df.all <- dplyr::bind_rows(df_list) %>% mutate(assembly = factor(assembly))
 
 	p <- ggplot(df.all, aes(x = SCov)) +
 		geom_histogram(aes(color=assembly, fill=assembly), alpha = 0.8, position = "identity", binwidth = 0.01, size=0.2) +
@@ -95,12 +92,12 @@ for (r in seq_along(ref_list)) {
 		scale_color_discrete(guide = FALSE) +
 		scale_fill_discrete(guide = FALSE) +
 		theme(strip.text.x = element_text(size = 6)) +
-	  theme(axis.text = element_text(size = rel(0.75)))
+		theme(axis.text = element_text(size = rel(0.75)))
 
 	filename_pdf <- paste0(dir, "/ideel/", ref_list[[r]], "_ideel_histograms.pdf")
 	writeLines(paste("Saving plot to", filename_pdf))
 	ggsave(p, filename = filename_pdf)
-	
+
 	p.box <- df.all %>%
 	  mutate(assembly = fct_reorder(assembly, SCov, mean)) %>%
 	  ggplot(aes(y = assembly, x = SCov)) +

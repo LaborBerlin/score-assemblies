@@ -350,7 +350,7 @@ rule diamond:
 	log: log_dir + "/ideel/diamond/{id}.log"
 	shell:
 		"""
-		diamond blastp --threads {threads} --max-target-seqs 1 --db {input.db} --query {input.proteins} --outfmt 6 qlen slen --out {output} >{log} 2>&1
+		diamond blastp --threads {threads} --max-target-seqs 1 --db {input.db} --query {input.proteins} --outfmt 6 qseqid sseqid qlen slen --out {output} >{log} 2>&1
 		"""
 
 # -------------------------------------------------------------------------------------------------------------------------------------------
@@ -404,7 +404,7 @@ rule diamond_ref:
 	log: log_dir + "/ideel/diamond-ref/{ref}_{id}.log"
 	shell:
 		"""
-		diamond blastp --threads {threads} --max-target-seqs 1 --db {input.db} --query {input.proteins} --outfmt 6 qlen slen sseqid --out {output} >{log} 2>&1
+		diamond blastp --threads {threads} --max-target-seqs 1 --db {input.db} --query {input.proteins} --outfmt 6 qseqid sseqid qlen slen --out {output} >{log} 2>&1
 		"""
 # -------------------------------------------------------------------------------------------------------------------------------------------
 # plots
