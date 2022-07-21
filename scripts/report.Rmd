@@ -239,9 +239,9 @@ ORFs are predicted in each assembly using Prodigal.
 fname_prodigal_stats <- paste0(out_dir, "/ideel/prodigal_stats.tsv")
 
 df.prodigal_stats <- read_tsv(fname_prodigal_stats, col_names = TRUE, col_types = "fcciiidi") %>%
-    mutate(assembly = str_remove(file, "^ideel/prodigal/")) %>%
+    mutate(assembly = str_remove(file, "^.*/ideel/prodigal/")) %>%
     mutate(assembly = str_remove(assembly, "\\.faa")) %>%
-    select(assembly, num_seqs, min_len, avg_len, max_len, sum_len)
+    transmute(assembly, n_predicted_ORFs = num_seqs, min_len, avg_len, max_len, sum_len)
 
 dt <- df.prodigal_stats %>%
   DT::datatable(escape = FALSE, rownames = FALSE, class="compact hover",
@@ -309,7 +309,7 @@ asis_output("### Comparison with reference proteomes\n")
 asis_output("Predicted ORFs are searched against the provided reference protein sequences using diamond.  \n")
 asis_output("Measured is the number of ORFs with a database match, the fraction of ORFs that have the same length or ≥95% the length of the best-matching database sequence (higher fractions being better)")
 
-df.ideel_ref <- data.frame(assembly = character(), reference = character(), n_seq_ref = integer(), n_unique_qsid = integer(), n_unique_ssid = integer(), n_full_length_ORFs = integer(), n_min95perc_ORFs = integer())
+df.ideel_ref <- data.frame(assembly = character(), reference = character(), n_seq_ref = integer(), n_predicted_ORFs = integer(), n_unique_qsid = integer(), n_unique_ssid = integer(), n_full_length_ORFs = integer(), n_min95perc_ORFs = integer())
 
 dir_ideel_diamond_ref <- paste0(out_dir, "/ideel/diamond-ref/")
 ref_list <- list.dirs(path = dir_ideel_diamond_ref, recursive = FALSE, full.names = FALSE)
@@ -328,9 +328,12 @@ for (r in seq_along(ref_list)) {
     n_min95perc_len <- df %>% filter(qlen >= 0.95 * slen) %>% nrow()
     n_unique_ssid <- df %>% pull(sseqid) %>% unique() %>% length()
 
-    assembly <- filelist[[i]] %>% str_remove("\\.tsv") %>% str_remove(paste0("_", ref))
+    curr_assembly <- filelist[[i]] %>% str_remove("\\.tsv") %>% str_remove(paste0("_", ref))
 
-    df.ideel_ref <- df.ideel_ref %>% add_row(reference = ref, assembly = assembly, n_seq_ref = len_faa_ref, n_unique_qsid = n_unique_qsid, n_unique_ssid = n_unique_ssid, n_full_length_ORFs = n_same_len, n_min95perc_ORFs = n_min95perc_len)
+    # load number of ORFs as predicted by prodigal in this assembly
+    n_predicted_ORFs <- df.prodigal_stats %>% filter(assembly == curr_assembly) %>% pull(n_predicted_ORFs)
+
+    df.ideel_ref <- df.ideel_ref %>% add_row(reference = ref, assembly = curr_assembly, n_seq_ref = len_faa_ref, n_predicted_ORFs = n_predicted_ORFs, n_unique_qsid = n_unique_qsid, n_unique_ssid = n_unique_ssid, n_full_length_ORFs = n_same_len, n_min95perc_ORFs = n_min95perc_len)
   }
 }
 
@@ -338,8 +341,7 @@ dt <- df.ideel_ref %>%
   DT::datatable(escape = FALSE, rownames = FALSE, class="compact hover",
                 options = list(pageLength = 10, searchHighlight = TRUE, paginate = TRUE, lengthChange = FALSE, fixedHeader = TRUE, order = list(list(0, 'asc')))) %>%
   formatStyle(names(df.ideel_ref), 'font-size' = '90%')
-
-color_dt(dt, 5:7, c(green, green, green), df.ideel_ref)
+color_dt(dt, 6:8, c(green, green, green), df.ideel_ref)
 ```
 
 
