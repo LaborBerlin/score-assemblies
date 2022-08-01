@@ -227,7 +227,7 @@ rule quast:
 		reference = "references/{ref}.fa"
 	output:
 		report = out_dir + "/quast/{ref}/report.html"
-	log: log_dir + "/log/quast/{ref}/quast.log"
+	log: log_dir + "/quast/{ref}/quast.log"
 	shell:
 		"""
 		quast -t {threads} --glimmer -o {out_dir}/quast/{wildcards.ref} -r {input.reference} assemblies/*.fa >{log} 2>&1
@@ -360,7 +360,7 @@ rule download_bakta_db:
 	conda: "env/env-bakta.yaml"
 	priority: 10
 	output: "bakta/db/version.json"
-	log: "log/bakta/download.log"
+	log: log_dir + "/bakta/download.log"
 	shell:
 		"""
 		wget -N -P bakta https://jlubox.uni-giessen.de/dl/fiWhS6LJi8AizXvspaRxRzPN/db.tar.gz >{log} 2>&1
@@ -389,7 +389,7 @@ rule diamond_ref_makedb:
 		"references-protein/{ref}.faa"
 	output:
 		"references-protein/{ref}.dmnd"
-	log: "log/references-protein/{ref}-diamond-makedb.log"
+	log: log_dir + "/references-protein/{ref}-diamond-makedb.log"
 	shell:
 		"""
 		diamond makedb --db {output} --in {input} >{log} 2>&1
