@@ -67,6 +67,9 @@ do_reference_proteomes <-  dir.exists(path_references_protein)
 #do_reference_genomes <- TRUE
 #do_reference_proteomes <- TRUE
 
+list_ref <- list()
+list_ref_protein <- list()
+
 if(do_reference_genomes) {
   list_ref <- list.files(path = path_references, pattern = ".*\\.fa$", recursive = FALSE, full.names = FALSE)
   list_ref <- sort(str_remove(list_ref, "\\.fa$"))
@@ -359,39 +362,44 @@ list_headings <- c(list_headings, "% compl.", "full ORFs", ">95% ORFs")
 list_base_colors <- c(list_base_colors, green, green, green)
 
 # join reference-protein ideel results for each reference
-for(i in list_ref_protein) {
-  df.out <- df.out %>%
-    left_join(df.ideel_ref %>% filter(reference == i) %>% select(assembly, n_full_length_ORFs, n_min95perc_ORFs), by = "assembly")
 
-  list_headings <- c(list_headings, "full ORFs", ">95% ORFs")
-  list_base_colors <- c(list_base_colors, green, green)
+if(do_reference_proteomes) {
+	for(i in list_ref_protein) {
+		df.out <- df.out %>%
+			left_join(df.ideel_ref %>% filter(reference == i) %>% select(assembly, n_full_length_ORFs, n_min95perc_ORFs), by = "assembly")
+
+		list_headings <- c(list_headings, "full ORFs", ">95% ORFs")
+		list_base_colors <- c(list_base_colors, green, green)
+	}
 }
 
 # iterate through reference genomes and add columns from all tools
-for(i in list_ref) {
-  # join assess_assembly results
-  df.out <- df.out %>%
-    left_join(df.assess_assembly %>% filter(reference == i) %>% select(assembly, Qscore, percErr), by = "assembly")
-  list_headings <- c(list_headings, "Q-score", "% Err")
-  list_base_colors <- c(list_base_colors, green, red)
+if(do_reference_genomes) {
+	for(i in list_ref) {
+		# join assess_assembly results
+		df.out <- df.out %>%
+			left_join(df.assess_assembly %>% filter(reference == i) %>% select(assembly, Qscore, percErr), by = "assembly")
+		list_headings <- c(list_headings, "Q-score", "% Err")
+		list_base_colors <- c(list_base_colors, green, red)
 
-  # join assess_homopolymers results for each reference
-  df.out <- df.out %>%
-    left_join(df.single_nuc %>% filter(reference == i) %>% select(assembly, mean) %>% mutate(mean = round(mean, digits = 3)), by = "assembly")
-  list_headings <- c(list_headings, "Avg Correct")
-  list_base_colors <- c(list_base_colors, green)
+		# join assess_homopolymers results for each reference
+		df.out <- df.out %>%
+			left_join(df.single_nuc %>% filter(reference == i) %>% select(assembly, mean) %>% mutate(mean = round(mean, digits = 3)), by = "assembly")
+		list_headings <- c(list_headings, "Avg Correct")
+		list_base_colors <- c(list_base_colors, green)
 
-  # join dnadiff results for each reference
-  df.out <- df.out %>%
-    left_join(df.dnadiff %>% filter(reference == i) %>% select(assembly, AvgIdentity, TotalIndels), by = "assembly")
-  list_headings <- c(list_headings, "ANI", "Indels")
-  list_base_colors <- c(list_base_colors, green, red)
+		# join dnadiff results for each reference
+		df.out <- df.out %>%
+			left_join(df.dnadiff %>% filter(reference == i) %>% select(assembly, AvgIdentity, TotalIndels), by = "assembly")
+		list_headings <- c(list_headings, "ANI", "Indels")
+		list_base_colors <- c(list_base_colors, green, red)
 
-  # join nucdiff results for each reference
-  df.out <- df.out %>%
-    left_join(df.nucdiff %>% filter(reference == i) %>% select(assembly, Insertions, Deletions, Substitutions), by = "assembly")
-  list_headings <- c(list_headings, "Ins", "Del", "Sub")
-  list_base_colors <- c(list_base_colors, red, red, red)
+		# join nucdiff results for each reference
+		df.out <- df.out %>%
+			left_join(df.nucdiff %>% filter(reference == i) %>% select(assembly, Insertions, Deletions, Substitutions), by = "assembly")
+		list_headings <- c(list_headings, "Ins", "Del", "Sub")
+		list_base_colors <- c(list_base_colors, red, red, red)
+	}
 }
 
 list_th_tool_names_prot <- function(x) { htmltools::withTags(th("IDEEL reference", colspan=2)) }
