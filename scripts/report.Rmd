@@ -254,7 +254,7 @@ color_dt(dt, 2:6, c(green, green, green, green, green), df.prodigal_stats)
 ### Comparison with Uniprot Sprot database
 
 Predicted ORFs are searched against die Uniprot Sprot database using diamond.
-Measured is the number of ORFs with a database match, the fraction of ORFs that have the same length or ≥95% the length of the best-matching database sequence (higher fractions being better).
+Measured is the number of ORFs with a database match (n_unique_qsid), the fraction of ORFs that have the same length or ≥95% the length of the best-matching database sequence (higher fractions being better).
 
 ```{r}
 dir_ideel_diamond <- paste0(out_dir, "/ideel/diamond/")
@@ -275,7 +275,7 @@ df.all <- dplyr::bind_rows(df_list) %>% mutate(assembly = factor(assembly))
 df.ideel_uniprot <- df.all %>%
   group_by(assembly) %>%
   summarise(
-    n_ORFs = n(),
+    n_unique_qsid = n_distinct(qseqid),
     n_full_length_ORFs = sum(qlen == slen),
     n_95perc_ORFs = sum(qlen >= 0.95 * slen)
   ) %>%
