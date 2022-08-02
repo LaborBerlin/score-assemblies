@@ -18,6 +18,8 @@ wildcard_constraints:
 
 assemblies, = glob_wildcards("assemblies/{id,[^/\\\\]+}.fa")
 
+assemblies_fa = expand("assemblies/{id}.fa", id=assemblies)
+
 if len(assemblies) == 0:
 	print("Found no *.fa files in folder assemblies/")
 	quit()
@@ -142,7 +144,7 @@ rule assess_homopolymers_minimap:
 rule assess_homopolymers:
 	input: out_dir + "/pomoxis/{id}/assess_homopolymers/{id}_{ref}.bam"
 	output:
-		count = out_dir + "/pomoxis/{id}/assess_homopolymers/{id}_{ref}_count/hp_counts.pkl",
+		hp_count = out_dir + "/pomoxis/{id}/assess_homopolymers/{id}_{ref}_count/hp_counts.pkl",
 		rel_len = out_dir + "/pomoxis/{id}/assess_homopolymers/{id}_{ref}_analyse/hp_rel_len_counts.txt",
 		rel_len2 = out_dir + "/pomoxis/{id}/assess_homopolymers/{id}_{ref}_rel_len.tsv",
 		correct_len = out_dir + "/pomoxis/{id}/assess_homopolymers/{id}_{ref}_analyse/hp_correct_vs_len.txt",
@@ -155,7 +157,7 @@ rule assess_homopolymers:
 		"""
 		rm -rf {params.count_dir} {params.analyse_dir}
 		assess_homopolymers count -o {params.count_dir} {input} >{log} 2>&1
-		assess_homopolymers analyse -o {params.analyse_dir} {output.count} >>{log} 2>&1
+		assess_homopolymers analyse -o {params.analyse_dir} {output.hp_count} >>{log} 2>&1
 
 		grep -v count {output.rel_len} | sed 's/^/{wildcards.id}\t{wildcards.ref}\t/' > {output.rel_len2}
 		grep -v rlen {output.correct_len} | sed 's/^/{wildcards.id}\t{wildcards.ref}\t/' > {output.correct_len2}
@@ -222,15 +224,16 @@ rule gather_stats_busco:
 # -------------------------------------------------------------------------------------------------------------------------------------------
 
 rule quast:
-	threads: 2
+	threads: 5
 	input:
-		reference = "references/{ref}.fa"
+		reference = "references/{ref}.fa",
+		fa = assemblies_fa
 	output:
 		report = out_dir + "/quast/{ref}/report.html"
 	log: log_dir + "/quast/{ref}/quast.log"
 	shell:
 		"""
-		quast -t {threads} --glimmer -o {out_dir}/quast/{wildcards.ref} -r {input.reference} assemblies/*.fa >{log} 2>&1
+		quast -t {threads} --glimmer -o {out_dir}/quast/{wildcards.ref} -r {input.reference} {input.fa} >{log} 2>&1
 		"""
 
 # -------------------------------------------------------------------------------------------------------------------------------------------
