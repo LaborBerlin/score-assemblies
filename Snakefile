@@ -362,13 +362,13 @@ rule diamond:
 rule download_bakta_db:
 	conda: "env/env-bakta.yaml"
 	priority: 10
-	output: "bakta/db/version.json"
+	output: out_dir + "/bakta/db/version.json"
 	log: log_dir + "/bakta/download.log"
 	shell:
 		"""
-		wget -N -P bakta https://jlubox.uni-giessen.de/dl/fiWhS6LJi8AizXvspaRxRzPN/db.tar.gz >{log} 2>&1
-		tar --directory bakta -xf bakta/db.tar.gz >{log} 2>&1
-		amrfinder_update --force_update --database bakta/db/amrfinderplus-db/ >{log} 2>&1
+		wget -N -P {out_dir}/bakta https://zenodo.org/record/5961398/files/db.tar.gz >{log} 2>&1
+		tar --directory {out_dir}/bakta -xf {out_dir}/bakta/db.tar.gz >{log} 2>&1
+		amrfinder_update --force_update --database {out_dir}/bakta/db/amrfinderplus-db/ >{log} 2>&1
 		"""
 
 rule bakta:
@@ -376,7 +376,7 @@ rule bakta:
 	threads: 5
 	input:
 		fa = "assemblies/{id}.fa",
-		db = "bakta/db/version.json"
+		db = out_dir + "/bakta/db/version.json"
 	output: out_dir + "/bakta/{id}/{id}.txt"
 	log: log_dir + "/bakta/{id}.log"
 	shell:
