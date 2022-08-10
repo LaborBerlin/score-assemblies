@@ -2,6 +2,8 @@
 
 A snakemake-wrapper for evaluating *de novo* bacterial genome assemblies, e.g. from Oxford Nanopore (ONT) or Illumina sequencing.
 
+See the preprint here: [Snakemake Workflows for Long-read Bacterial Genome Assembly and Evaluation, Preprints.org 2022](https://www.preprints.org/manuscript/202208.0191/v1)
+
 The workflow includes the following programs:
 * [pomoxis](https://github.com/nanoporetech/pomoxis) assess_assembly and assess_homopolymers
 * dnadiff from the [mummer](https://mummer4.github.io/index.html) package
