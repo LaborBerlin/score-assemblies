@@ -106,7 +106,7 @@ for each ORF. For each assembly, the distribution of the ratios between length
 of the ORF and the matching database sequence are plotted to `ideel/ideel_uniprot_histograms.pdf` and `ideel/ideel_uniprot_boxplots.pdf`.
 
 Additionally, diamond alignments are done between the predicted ORFs and the supplied reference proteins and ratios are plotted to
-`score-assemblies-data/ideel/<reference>_ideel_histograms.pdf` and `score-assemblies-data/ideel/<reference>_ideel_boxplots.pdf.
+`score-assemblies-data/ideel/<reference>_ideel_histograms.pdf` and `score-assemblies-data/ideel/<reference>_ideel_boxplots.pdf`.
 
 ### bakta
 bakta is only run when specified as extra config argument in the snakemake call:
