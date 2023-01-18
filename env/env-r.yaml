@@ -5,10 +5,10 @@ channels:
   - defaults
 dependencies:
   - bioconda::bioconductor-biostrings=2.62.0
-  - conda-forge::r-tidyverse
-  - conda-forge::r-base
-  - conda-forge::r-tidytext
-  - conda-forge::r-dt
-  - conda-forge::r-knitr
-  - conda-forge::r-rmarkdown
-  - conda-forge::r-markdown
+  - conda-forge::r-tidyverse=1.3.2
+  - conda-forge::r-base=4.1.3
+  - conda-forge::r-tidytext=0.3.3
+  - conda-forge::r-dt=0.23
+  - conda-forge::r-knitr=1.39
+  - conda-forge::r-rmarkdown=2.14
+  - conda-forge::r-markdown=1.1
