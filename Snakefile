@@ -335,7 +335,7 @@ rule prodigal:
 		"""
 
 rule prodigal_stats:
-  threads: 1
+	threads: 1
 	input: list_prodigal_proteins
 	output: out_dir + "/ideel/prodigal_stats.tsv"
 	log: log_dir + "/ideel/prodigal_stats.log"
@@ -345,7 +345,7 @@ rule prodigal_stats:
 		"""
 
 rule diamond:
-  threads: 5
+	threads: 5
 	input:
 		proteins = out_dir + "/ideel/prodigal/{id}.faa",
 		db = out_dir + "/ideel/uniprot/uniprot_sprot.dmnd"
@@ -399,7 +399,7 @@ rule diamond_ref_makedb:
 		"""
 
 rule diamond_ref:
-  threads: 5
+	threads: 5
 	input:
 		proteins = out_dir + "/ideel/prodigal/{id}.faa",
 		db = "references-protein/{ref}.dmnd"
