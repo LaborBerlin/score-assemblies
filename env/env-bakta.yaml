@@ -5,4 +5,4 @@ channels:
   - defaults
   - anaconda
 dependencies:
-  - bioconda::bakta=1.4.0
+  - bioconda::bakta=1.7.0

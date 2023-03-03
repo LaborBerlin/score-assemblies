@@ -478,9 +478,9 @@ rule download_bakta_db:
         log_dir + "/bakta/download.log",
     shell:
         """
-        wget -N -P {out_dir}/bakta https://zenodo.org/record/5961398/files/db.tar.gz >{log} 2>&1
-        tar --directory {out_dir}/bakta -xf {out_dir}/bakta/db.tar.gz >{log} 2>&1
-        amrfinder_update --force_update --database {out_dir}/bakta/db/amrfinderplus-db/ >{log} 2>&1
+        wget -N -P {out_dir}/bakta https://zenodo.org/record/7669534/files/db-light.tar.gz >{log} 2>&1
+        tar --directory {out_dir}/bakta -xf {out_dir}/bakta/db-light.tar.gz >{log} 2>&1
+        amrfinder_update --force_update --database {out_dir}/bakta/db-light/amrfinderplus-db/ >{log} 2>&1
         """
 
 
@@ -490,14 +490,14 @@ rule bakta:
     threads: 5
     input:
         fa="assemblies/{id}.fa",
-        db=out_dir + "/bakta/db/version.json",
+        db=out_dir + "/bakta/db-light/version.json",
     output:
         out_dir + "/bakta/{id}/{id}.txt",
     log:
         log_dir + "/bakta/{id}.log",
     shell:
         """
-        bakta --db {out_dir}/bakta/db --verbose --output {out_dir}/bakta/{wildcards.id} --prefix {wildcards.id} --threads {threads} {input.fa} >{log} 2>&1
+        bakta --db {out_dir}/bakta/db-light --verbose --output {out_dir}/bakta/{wildcards.id} --prefix {wildcards.id} --threads {threads} {input.fa} >{log} 2>&1
         """
 
 
