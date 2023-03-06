@@ -473,7 +473,7 @@ rule download_bakta_db:
         "env/env-bakta.yaml"
     priority: 10
     output:
-        out_dir + "/bakta/db/version.json",
+        out_dir + "/bakta/db-light/version.json",
     log:
         log_dir + "/bakta/download.log",
     shell:
@@ -626,6 +626,7 @@ rule report_html:
         list_dnadiff,
         list_nucdiff,
         list_pomoxis,
+        list_bakta_out,
     output:
         "score-assemblies-report.html",
     message:

@@ -57,8 +57,10 @@ out_dir <- args[2]
 
 path_references <- paste0(getwd(),'/references')
 path_references_protein <- paste0(getwd(),'/references-protein')
+path_bakta <- paste0(out_dir,'/bakta/') # with trailing /
 do_reference_genomes <- dir.exists(path_references)
 do_reference_proteomes <-  dir.exists(path_references_protein)
+do_bakta <-  dir.exists(path_bakta)
 
 #for debugging:
 #opts_knit$set(root.dir = "~/temp/score-assemblies")
@@ -345,6 +347,34 @@ dt <- df.ideel_ref %>%
                 options = list(pageLength = 10, searchHighlight = TRUE, paginate = TRUE, lengthChange = FALSE, fixedHeader = TRUE, order = list(list(0, 'asc')))) %>%
   formatStyle(names(df.ideel_ref), 'font-size' = '90%')
 color_dt(dt, 6:8, c(green, green, green), df.ideel_ref)
+```
+
+```{r eval=do_bakta}
+asis_output("## Bakta genome annotation\n")
+
+asis_output("Assemblies are annotated using bakta, which searches for protein-coding and non-coding genes, as well as other genomic features.\n")
+
+filelist <- list.files(path = path_bakta, pattern = ".*\\.txt", recursive = TRUE)
+
+df_list <- vector("list", length(filelist))
+for (i in seq_along(filelist)) {
+  filename <- paste0(path_bakta, filelist[[i]])
+  df <- read_delim(filename, col_names = c("label", "value"), col_types = "cc", delim = ":", skip = 9, n_max = 15, trim_ws = TRUE) %>%
+    mutate(assembly = str_match(filelist[[i]],"/(.*?)$")[,2]) %>%
+    mutate(assembly = str_remove(assembly, "\\.txt"))
+
+  df_list[[i]] <- df
+}
+df.all <- dplyr::bind_rows(df_list) %>% mutate(assembly = factor(assembly))
+
+df.bakta <- df.all %>%
+	mutate(value = as.integer(value)) %>%
+	pivot_wider(id_cols = "assembly", names_from = "label", values_from = "value")
+
+df.bakta %>%
+  DT::datatable(escape = FALSE, rownames = FALSE, class="compact hover",
+                options = list(scrollX = TRUE, fixedColumns = list(leftColumns = 1), pageLength = 10, searchHighlight = TRUE, paginate = TRUE, lengthChange = TRUE, fixedHeader = TRUE, order = list(list(0, 'asc')))) %>%
+  formatStyle(names(df.bakta), 'font-size' = '90%')
 ```
 
 
