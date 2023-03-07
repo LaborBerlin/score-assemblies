@@ -1,0 +1,6 @@
+name: score-assemblies-pomoxis
+channels:
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::pomoxis=0.3.11

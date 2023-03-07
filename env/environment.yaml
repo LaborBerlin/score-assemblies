@@ -1,16 +1,6 @@
 name: score-assemblies
 channels:
-  - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - bioconda::pomoxis=0.3.2
-  - bioconda::busco=5.2.2
-  - bioconda::augustus=3.3.3
-  - bioconda::snakemake=6.15.5
-  - bioconda::quast=5.0.2
-  - bioconda::mummer=3.23
-  - bioconda::diamond=0.9.30
-  - bioconda::prodigal=2.6.3
-  - bioconda::nucdiff=2.0.2
-  - bioconda::seqkit=2.2.0
+  - bioconda::snakemake=7.24.0

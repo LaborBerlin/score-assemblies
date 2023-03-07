@@ -1,6 +1,5 @@
 name: score-assemblies-bakta
 channels:
-  - conda-forge
   - bioconda
   - defaults
   - anaconda

@@ -1,0 +1,6 @@
+name: score-assemblies-mummer
+channels:
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::mummer=3.23

@@ -1,0 +1,6 @@
+name: score-assemblies-nucdiff
+channels:
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::nucdiff=2.0.3

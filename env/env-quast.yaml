@@ -1,0 +1,6 @@
+name: score-assemblies-quast
+channels:
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::quast=5.2.0

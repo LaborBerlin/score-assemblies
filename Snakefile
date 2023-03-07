@@ -174,6 +174,8 @@ rule all:
 
 
 rule assess_assembly:
+    conda:
+        "env/env-pomoxis.yaml"
     input:
         assembly="assemblies/{id}.fa",
         ref="references/{ref}.fa",
@@ -192,6 +194,8 @@ rule assess_assembly:
 
 
 rule assess_homopolymers_minimap:
+    conda:
+        "env/env-pomoxis.yaml"
     threads: 5
     input:
         assembly="assemblies/{id}.fa",
@@ -207,6 +211,8 @@ rule assess_homopolymers_minimap:
 
 
 rule assess_homopolymers:
+    conda:
+        "env/env-pomoxis.yaml"
     input:
         out_dir + "/pomoxis/{id}/assess_homopolymers/{id}_{ref}.bam",
     output:
@@ -264,6 +270,8 @@ rule gather_stats_pomoxis:
 
 
 rule busco:
+    conda:
+        "env/env-busco.yaml"
     threads: 5
     resources:
         wget_busco=1,
@@ -290,7 +298,6 @@ rule busco2tsv:
         perl -lne 'print "{wildcards.id}\t$1\t$2\t$3\t$4" if /C:([\-\d\.]+).*F:([\-\d\.]+).*M:([\-\d\.]+).*n:(\d+)/' {input} > {output}
         """
 
-
 rule gather_stats_busco:
     input:
         list_busco_tsv,
@@ -308,6 +315,8 @@ rule gather_stats_busco:
 
 
 rule quast:
+    conda:
+        "env/env-quast.yaml"
     threads: 5
     input:
         reference="references/{ref}.fa",
@@ -328,6 +337,8 @@ rule quast:
 
 
 rule dnadiff:
+    conda:
+        "env/env-mummer.yaml"
     threads: 1
     input:
         reference="references/{ref}.fa",
@@ -362,6 +373,8 @@ rule gather_stats_dnadiff:
 
 
 rule nucdiff:
+    conda:
+        "env/env-nucdiff.yaml"
     threads: 1
     input:
         reference="references/{ref}.fa",
@@ -404,11 +417,13 @@ rule download_uniprot:
         log_dir + "/ideel/uniprot/download.log",
     shell:
         """
-        wget -P {out_dir}/ideel/uniprot ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz >{log} 2>&1
+        wget -P {out_dir}/ideel/uniprot http://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz >{log} 2>&1
         """
 
 
 rule diamond_makedb:
+    conda:
+        "env/env-ideel.yaml"
     input:
         out_dir + "/ideel/uniprot/uniprot_sprot.fasta.gz",
     output:
@@ -422,6 +437,8 @@ rule diamond_makedb:
 
 
 rule prodigal:
+    conda:
+        "env/env-ideel.yaml"
     input:
         "assemblies/{id}.fa",
     output:
@@ -437,6 +454,8 @@ rule prodigal:
 
 
 rule prodigal_stats:
+    conda:
+        "env/env-ideel.yaml"
     threads: 1
     input:
         list_prodigal_proteins,
@@ -451,6 +470,8 @@ rule prodigal_stats:
 
 
 rule diamond:
+    conda:
+        "env/env-ideel.yaml"
     threads: 5
     input:
         proteins=out_dir + "/ideel/prodigal/{id}.faa",
@@ -507,6 +528,8 @@ rule bakta:
 
 
 rule diamond_ref_makedb:
+    conda:
+        "env/env-ideel.yaml"
     input:
         "references-protein/{ref}.faa",
     output:
@@ -520,6 +543,8 @@ rule diamond_ref_makedb:
 
 
 rule diamond_ref:
+    conda:
+        "env/env-ideel.yaml"
     threads: 5
     input:
         proteins=out_dir + "/ideel/prodigal/{id}.faa",
