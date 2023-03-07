@@ -298,6 +298,7 @@ rule busco2tsv:
         perl -lne 'print "{wildcards.id}\t$1\t$2\t$3\t$4" if /C:([\-\d\.]+).*F:([\-\d\.]+).*M:([\-\d\.]+).*n:(\d+)/' {input} > {output}
         """
 
+
 rule gather_stats_busco:
     input:
         list_busco_tsv,
