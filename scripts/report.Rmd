@@ -355,6 +355,7 @@ asis_output("## Bakta genome annotation\n")
 asis_output("Assemblies are annotated using bakta, which searches for protein-coding and non-coding genes, as well as other genomic features.\n")
 
 filelist <- list.files(path = path_bakta, pattern = ".*\\.txt", recursive = TRUE)
+filelist <- filelist[-grep("^db-light",filelist)]
 
 df_list <- vector("list", length(filelist))
 for (i in seq_along(filelist)) {
