@@ -1,6 +1,5 @@
 from glob import glob
 
-shell.executable("/bin/bash")
 
 out_dir = "score-assemblies-data"
 log_dir = "score-assemblies-data/log"
@@ -351,7 +350,7 @@ rule dnadiff:
         log_dir + "/dnadiff/{ref}/{id}-dnadiff.log",
     shell:
         """
-        dnadiff -p {out_dir}/dnadiff/{wildcards.ref}/{wildcards.id}-dnadiff {input.reference} {input.assembly} >{log} 2>&1
+        perl $CONDA_PREFIX/bin/dnadiff -p {out_dir}/dnadiff/{wildcards.ref}/{wildcards.id}-dnadiff {input.reference} {input.assembly} >{log} 2>&1
         cat {output.dnadiff_report} | grep -A3 '1-to-1' | grep 'AvgIdentity' | sed -e 's/^/{wildcards.id}\t{wildcards.ref}\t/' | perl -lpne 's/\s+/\t/g' > {output.stats_tsv}
         grep TotalIndels {output.dnadiff_report} | sed -e 's/^/{wildcards.id}\t{wildcards.ref}\t/' | perl -lpne 's/\s+/\t/g' >> {output.stats_tsv}
         """
