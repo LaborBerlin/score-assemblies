@@ -278,7 +278,10 @@ rule busco:
     input:
         assembly="assemblies/{id}.fa",
     output:
-        out_dir + "/busco/{id}/short_summary.specific." + busco_lineage + "_odb10.{id}.txt",
+        out_dir
+        + "/busco/{id}/short_summary.specific."
+        + busco_lineage
+        + "_odb10.{id}.txt",
     params:
         out_dir=out_dir,
         busco_lineage=busco_lineage,
@@ -424,7 +427,7 @@ rule download_uniprot:
     log:
         log_dir + "/ideel/uniprot/download.log",
     params:
-      out_dir = out_dir
+        out_dir=out_dir,
     shell:
         """
         wget -P {params.out_dir}/ideel/uniprot http://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz >{log} 2>&1
