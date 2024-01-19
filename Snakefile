@@ -16,15 +16,16 @@ wildcard_constraints:
     id="[^/\\\\]+",
     ref="[^/\\\\]+",
 
+
 # test if run via ont-assembly-snake, then look for folder and not .fa files
 if config.get("run_score_assemblies", False):
-	(assemblies,) = glob_wildcards("assemblies/{id,[^\\./\\\\]+}")
+    (assemblies,) = glob_wildcards("assemblies/{id,[^\\./\\\\]+}")
 else:
-	(assemblies,) = glob_wildcards("assemblies/{id,[^/\\\\]+}.fa")
+    (assemblies,) = glob_wildcards("assemblies/{id,[^/\\\\]+}.fa")
 
-	if len(assemblies) == 0:
-			print("Found no *.fa files in folder assemblies/")
-			quit()
+    if len(assemblies) == 0:
+        print("Found no *.fa files in folder assemblies/")
+        quit()
 
 assemblies_fa = expand("assemblies/{id}.fa", id=assemblies)
 
