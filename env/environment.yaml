@@ -3,4 +3,4 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - bioconda::snakemake=7.24.0
+  - bioconda::snakemake>=7.24,<8
