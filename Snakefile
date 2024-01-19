@@ -19,7 +19,11 @@ wildcard_constraints:
 
 # test if run via ont-assembly-snake, then look for folder and not .fa files
 if config.get("run_score_assemblies", False):
-    (assemblies,) = glob_wildcards("assemblies/{id,[^\\./\\\\]+}")
+    # if config files with list of assemblies is given, then use this instead of folders in assemblies/
+    if config.get("assemblies", False):
+        assemblies = list(set(config["assemblies"]))
+    else:
+        (assemblies,) = glob_wildcards("assemblies/{id,[^\\./\\\\]+}")
 else:
     (assemblies,) = glob_wildcards("assemblies/{id,[^/\\\\]+}.fa")
 
