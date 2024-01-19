@@ -4,8 +4,7 @@ from glob import glob
 out_dir = "score-assemblies-data"
 log_dir = "score-assemblies-data/log"
 
-snake_dir = workflow.basedir
-report_rmd = snake_dir + "/scripts/report.Rmd"
+report_rmd = workflow.source_path("scripts/report.Rmd")
 
 workflow.global_resources["wget_busco"] = 1
 
@@ -183,9 +182,11 @@ rule assess_assembly:
         tsv=out_dir + "/pomoxis/{id}/assess_assembly/{id}_{ref}_scores.tsv",
     log:
         log_dir + "/pomoxis/{id}/assess_assembly/{id}_{ref}_log.txt",
+    params:
+        out_dir=out_dir,
     shell:
         """
-        assess_assembly -r {input.ref} -i {input.assembly} -p {out_dir}/pomoxis/{wildcards.id}/assess_assembly/{wildcards.id}_{wildcards.ref} >{log} 2>&1
+        assess_assembly -r {input.ref} -i {input.assembly} -p {params.out_dir}/pomoxis/{wildcards.id}/assess_assembly/{wildcards.id}_{wildcards.ref} >{log} 2>&1
         meanQ=$(grep -A2 '#  Q Scores' {output.summ} | tail -n1 | awk '{{print $2}}')
         percErr=$(grep -A2 '#  Percentage Errors' {output.summ} | tail -n1 | awk '{{print $2}}')
         echo "{wildcards.id}\t{wildcards.ref}\t$meanQ\t$percErr" > {output.tsv}
@@ -277,12 +278,15 @@ rule busco:
     input:
         assembly="assemblies/{id}.fa",
     output:
-        out_dir + "/busco/{id}/short_summary.specific.{busco_lineage}_odb10.{id}.txt",
+        out_dir + "/busco/{id}/short_summary.specific." + busco_lineage + "_odb10.{id}.txt",
+    params:
+        out_dir=out_dir,
+        busco_lineage=busco_lineage,
     log:
-        log_dir + "/busco/{id}/busco_{busco_lineage}.log",
+        log_dir + "/busco/{id}/busco_" + busco_lineage + ".log",
     shell:
         """
-        cd {out_dir}/busco && busco -q -c {threads} -f -m genome -l {busco_lineage} -o {wildcards.id} -i ../../{input} >../../{log} 2>&1
+        cd {params.out_dir}/busco && busco -q -c {threads} -f -m genome -l {params.busco_lineage} -o {wildcards.id} -i ../../{input} >../../{log} 2>&1
         """
 
 
@@ -325,9 +329,11 @@ rule quast:
         report=out_dir + "/quast/{ref}/report.html",
     log:
         log_dir + "/quast/{ref}/quast.log",
+    params:
+        out_dir=out_dir,
     shell:
         """
-        quast -t {threads} --glimmer -o {out_dir}/quast/{wildcards.ref} -r {input.reference} {input.fa} >{log} 2>&1
+        quast -t {threads} --glimmer -o {params.out_dir}/quast/{wildcards.ref} -r {input.reference} {input.fa} >{log} 2>&1
         """
 
 
@@ -348,9 +354,11 @@ rule dnadiff:
         stats_tsv=out_dir + "/dnadiff/{ref}/{id}-dnadiff-stats.tsv",
     log:
         log_dir + "/dnadiff/{ref}/{id}-dnadiff.log",
+    params:
+        out_dir=out_dir,
     shell:
         """
-        perl $CONDA_PREFIX/bin/dnadiff -p {out_dir}/dnadiff/{wildcards.ref}/{wildcards.id}-dnadiff {input.reference} {input.assembly} >{log} 2>&1
+        perl $CONDA_PREFIX/bin/dnadiff -p {params.out_dir}/dnadiff/{wildcards.ref}/{wildcards.id}-dnadiff {input.reference} {input.assembly} >{log} 2>&1
         cat {output.dnadiff_report} | grep -A3 '1-to-1' | grep 'AvgIdentity' | sed -e 's/^/{wildcards.id}\t{wildcards.ref}\t/' | perl -lpne 's/\s+/\t/g' > {output.stats_tsv}
         grep TotalIndels {output.dnadiff_report} | sed -e 's/^/{wildcards.id}\t{wildcards.ref}\t/' | perl -lpne 's/\s+/\t/g' >> {output.stats_tsv}
         """
@@ -415,9 +423,11 @@ rule download_uniprot:
         out_dir + "/ideel/uniprot/uniprot_sprot.fasta.gz",
     log:
         log_dir + "/ideel/uniprot/download.log",
+    params:
+      out_dir = out_dir
     shell:
         """
-        wget -P {out_dir}/ideel/uniprot http://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz >{log} 2>&1
+        wget -P {params.out_dir}/ideel/uniprot http://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz >{log} 2>&1
         """
 
 
@@ -428,11 +438,13 @@ rule diamond_makedb:
         out_dir + "/ideel/uniprot/uniprot_sprot.fasta.gz",
     output:
         out_dir + "/ideel/uniprot/uniprot_sprot.dmnd",
+    params:
+        out_dir=out_dir,
     log:
         log_dir + "/diamond-makedb-uniprot.log",
     shell:
         """
-        diamond makedb --db {out_dir}/ideel/uniprot/uniprot_sprot --in {input} >{log} 2>&1
+        diamond makedb --db {params.out_dir}/ideel/uniprot/uniprot_sprot --in {input} >{log} 2>&1
         """
 
 
@@ -495,13 +507,15 @@ rule download_bakta_db:
     priority: 10
     output:
         out_dir + "/bakta/db-light/version.json",
+    params:
+        out_dir=out_dir,
     log:
         log_dir + "/bakta/download.log",
     shell:
         """
-        wget -N -P {out_dir}/bakta https://zenodo.org/record/7669534/files/db-light.tar.gz >{log} 2>&1
-        tar --directory {out_dir}/bakta -xf {out_dir}/bakta/db-light.tar.gz >{log} 2>&1
-        amrfinder_update --force_update --database {out_dir}/bakta/db-light/amrfinderplus-db/ >{log} 2>&1
+        wget -N -P {params.out_dir}/bakta https://zenodo.org/record/7669534/files/db-light.tar.gz >{log} 2>&1
+        tar --directory {params.out_dir}/bakta -xf {params.out_dir}/bakta/db-light.tar.gz >{log} 2>&1
+        amrfinder_update --force_update --database {params.out_dir}/bakta/db-light/amrfinderplus-db/ >{log} 2>&1
         """
 
 
@@ -514,11 +528,13 @@ rule bakta:
         db=out_dir + "/bakta/db-light/version.json",
     output:
         out_dir + "/bakta/{id}/{id}.txt",
+    params:
+        out_dir=out_dir,
     log:
         log_dir + "/bakta/{id}.log",
     shell:
         """
-        bakta --db {out_dir}/bakta/db-light --verbose --output {out_dir}/bakta/{wildcards.id} --prefix {wildcards.id} --threads {threads} {input.fa} >{log} 2>&1
+        bakta --db {params.out_dir}/bakta/db-light --verbose --output {params.out_dir}/bakta/{wildcards.id} --prefix {wildcards.id} --threads {threads} {input.fa} >{log} 2>&1
         """
 
 
@@ -660,7 +676,9 @@ rule report_html:
         log_dir + "/report.log",
     params:
         wd=os.getcwd(),
+        out_dir=out_dir,
+        report_rmd=report_rmd,
     shell:
         """
-        Rscript -e 'args<-commandArgs(trailingOnly = TRUE); rmarkdown::render(args[1], output_file=args[3], knit_root_dir=args[4])' {report_rmd} {out_dir} {params.wd}/{output} {params.wd} >{log} 2>&1
+        Rscript -e 'args<-commandArgs(trailingOnly = TRUE); rmarkdown::render(args[1], output_file=args[3], knit_root_dir=args[4])' {params.report_rmd} {params.out_dir} {params.wd}/{output} {params.wd} >{log} 2>&1
         """
