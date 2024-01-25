@@ -1,6 +1,6 @@
 # score-assemblies
 
-A snakemake-wrapper for evaluating *de novo* bacterial genome assemblies, e.g. from Oxford Nanopore (ONT) or Illumina sequencing.
+A Snakemake-wrapper for evaluating *de novo* bacterial genome assemblies, e.g. from Oxford Nanopore (ONT) or Illumina sequencing.
 
 See the preprint here: [Snakemake Workflows for Long-read Bacterial Genome Assembly and Evaluation, Preprints.org 2022](https://www.preprints.org/manuscript/202208.0191/v1)
 
@@ -50,7 +50,7 @@ For example:
     └── AL123456.3.faa
 
 ```
-NB: The assembly and reference fasta files need to have the `.fa` extension and protein reference fasta files need to have the extension `.faa`.
+NB: The assembly and reference FASTA files need to have the `.fa` extension and protein reference FASTA files need to have the extension `.faa`.
 
 This is the same folder structure used by [ont-assembly-snake](https://github.com/pmenzel/ont-assembly-snake), i.e. score-assemblies can be run directly in the same folder.
 
