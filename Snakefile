@@ -17,6 +17,7 @@ wildcard_constraints:
     id="[^/\\\\]+",
     ref="[^/\\\\]+",
 
+
 (references,) = glob_wildcards("references/{ref,[^/\\\\]+}.fa")
 (references_protein,) = glob_wildcards("references-protein/{ref,[^/\\\\]+}.faa")
 
@@ -37,7 +38,11 @@ if config.get("run_score_assemblies", False):
             extended_a = [a + r for r in references]
             extended_list.extend(extended_a)
     assemblies.extend(extended_list)
-    assemblies = [a for a in assemblies if not a.endswith("homopolish") and not a.endswith("proovframe")]
+    assemblies = [
+        a
+        for a in assemblies
+        if not a.endswith("homopolish") and not a.endswith("proovframe")
+    ]
 else:
     (assemblies,) = glob_wildcards("assemblies/{id,[^/\\\\]+}.fa")
 
@@ -205,7 +210,7 @@ rule assess_assembly:
     log:
         log_dir + "/pomoxis/{id}/assess_assembly/{id}_{ref}.log",
     benchmark:
-        benchmark_dir + "/pomoxis/{id}/assess_assembly/{id}_{ref}.txt",
+        benchmark_dir + "/pomoxis/{id}/assess_assembly/{id}_{ref}.txt"
     params:
         out_dir=out_dir,
     shell:
@@ -229,7 +234,7 @@ rule assess_homopolymers_minimap:
     log:
         log_dir + "/pomoxis/{id}/assess_homopolymers/{id}_{ref}_minimap2.log",
     benchmark:
-			  benchmark_dir + "/pomoxis/{id}/assess_homopolymers/{id}_{ref}_minimap2.txt",
+        benchmark_dir + "/pomoxis/{id}/assess_homopolymers/{id}_{ref}_minimap2.txt"
     shell:
         """
         minimap2 -x asm5 -t {threads} --MD -a {input.ref} {input.assembly} 2>{log} | samtools sort -o {output} - >>{log} 2>&1
@@ -261,7 +266,7 @@ rule assess_homopolymers:
     log:
         log_dir + "/pomoxis/{id}/assess_homopolymers/{id}_{ref}.log",
     benchmark:
-			  benchmark_dir + "/pomoxis/{id}/assess_homopolymers/{id}_{ref}.txt",
+        benchmark_dir + "/pomoxis/{id}/assess_homopolymers/{id}_{ref}.txt"
     shell:
         """
         rm -rf {params.count_dir} {params.analyse_dir}
@@ -316,7 +321,7 @@ rule busco:
     log:
         log_dir + "/busco/{id}/busco_" + busco_lineage + ".log",
     benchmark:
-        benchmark_dir + "/busco/{id}/busco_" + busco_lineage + ".txt",
+        benchmark_dir + "/busco/{id}/busco_" + busco_lineage + ".txt"
     shell:
         """
         cd {params.out_dir}/busco && busco -q -c {threads} -f -m genome -l {params.busco_lineage} -o {wildcards.id} -i ../../{input} >../../{log} 2>&1
@@ -363,7 +368,7 @@ rule quast:
     log:
         log_dir + "/quast/{ref}/quast.log",
     benchmark:
-			  benchmark_dir + "/quast/{ref}.txt",
+        benchmark_dir + "/quast/{ref}.txt"
     params:
         out_dir=out_dir,
     shell:
@@ -390,7 +395,7 @@ rule dnadiff:
     log:
         log_dir + "/dnadiff/{ref}/{id}-dnadiff.log",
     benchmark:
-			  benchmark_dir + "/dnadiff/{ref}/{id}.txt",
+        benchmark_dir + "/dnadiff/{ref}/{id}.txt"
     params:
         out_dir=out_dir,
     shell:
@@ -432,7 +437,7 @@ rule nucdiff:
     log:
         log_dir + "/nucdiff/{ref}/{id}-nucdiff.log",
     benchmark:
-        benchmark_dir + "/nucdiff/{ref}/{id}.txt",
+        benchmark_dir + "/nucdiff/{ref}/{id}.txt"
     shell:
         """
         nucdiff {input.reference} {input.assembly} {params.nucdiff_dir} nucdiff >{log} 2>&1
@@ -482,7 +487,7 @@ rule diamond_makedb:
     log:
         log_dir + "/diamond-makedb-uniprot.log",
     benchmark:
-        benchmark_dir + "/diamond-makedb-uniprot.txt",
+        benchmark_dir + "/diamond-makedb-uniprot.txt"
     shell:
         """
         diamond makedb --db {params.out_dir}/ideel/uniprot/uniprot_sprot --in {input} >{log} 2>&1
@@ -499,7 +504,7 @@ rule prodigal:
     log:
         log_dir + "/ideel/prodigal/{id}.log",
     benchmark:
-        benchmark_dir + "/ideel/prodigal/{id}.log",
+        benchmark_dir + "/ideel/prodigal/{id}.log"
     shell:
         """
         prodigal -a {output} -i {input} >{log} 2>&1
@@ -536,7 +541,7 @@ rule diamond:
     log:
         log_dir + "/ideel/diamond/{id}.log",
     benchmark:
-        benchmark_dir + "/ideel/diamond/{id}.txt",
+        benchmark_dir + "/ideel/diamond/{id}.txt"
     shell:
         """
         diamond blastp --threads {threads} --max-target-seqs 1 --db {input.db} --query {input.proteins} --outfmt 6 qseqid sseqid qlen slen --out {output} >{log} 2>&1
@@ -578,7 +583,7 @@ rule bakta:
     log:
         log_dir + "/bakta/{id}.log",
     benchmark:
-        benchmark_dir + "/bakta/{id}.txt",
+        benchmark_dir + "/bakta/{id}.txt"
     shell:
         """
         bakta --db {params.out_dir}/bakta/db-light --verbose --output {params.out_dir}/bakta/{wildcards.id} --prefix {wildcards.id} --threads {threads} {input.fa} >{log} 2>&1
@@ -600,7 +605,7 @@ rule diamond_ref_makedb:
     log:
         log_dir + "/references-protein/{ref}-diamond-makedb.log",
     benchmark:
-        benchmark_dir + "/references-protein/{ref}-diamond-makedb.txt",
+        benchmark_dir + "/references-protein/{ref}-diamond-makedb.txt"
     shell:
         """
         diamond makedb --db {output} --in {input} >{log} 2>&1
@@ -619,7 +624,7 @@ rule diamond_ref:
     log:
         log_dir + "/ideel/diamond-ref/{ref}_{id}.log",
     benchmark:
-        benchmark_dir + "/ideel/diamond-ref/{ref}_{id}.txt",
+        benchmark_dir + "/ideel/diamond-ref/{ref}_{id}.txt"
     shell:
         """
         diamond blastp --threads {threads} --max-target-seqs 1 --db {input.db} --query {input.proteins} --outfmt 6 qseqid sseqid qlen slen --out {output} >{log} 2>&1
