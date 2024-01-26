@@ -82,7 +82,7 @@ snakemake -s /opt/software/score-assemblies/Snakefile --cores 20 --config busco_
 If not set, the default lineage `bacteria` will be used.
 Available datasets can be listed with `busco --list-datasets`
 
-The number of complete, fragmented and missing BUSCOs per assembly is plotted in `score-assemblies-data/busco/busco_stats.pdf`.
+The number of complete, fragmented and missing BUSCOs per assembly is tabulated in the file `score-assemblies-data/busco/all_stats.tsv` and also drawn as dotplot in `score-assemblies-data/busco/busco_stats.pdf`.
 
 ### dnadiff
 Each assembly is compared with each reference and the output files will be
@@ -93,13 +93,13 @@ for each reference in `score-assemblies-data/dnadiff/<reference>_dnadiff_stats.p
 ### NucDiff
 Each assembly is compared with each reference and the output files will be
 located in the folder `score-assemblies-data/nucdiff/<reference>/<assembly>-nucdiff/`.  The values for
-`Insertions`, `Deletions`, and `Substitutions` are extracted from the file `results/nucdiff_stat.out` and are plotted
+`Insertions`, `Deletions`, and `Substitutions` are extracted from the file `results/nucdiff_stat.out` and are drawn
 for each reference in `score-assemblies-data/nucdiff/<reference>_nucdiff_stats.pdf`.
 
 ### QUAST
 One QUAST report is generated for each reference genome, containing the results for all assemblies.
 The report files are located in `score-assemblies-data/quast/<reference>/report.html`.
-
+The main report file `score-assemblies-report.html` also links the these individual reports.
 
 ### ideel
 Open reading frames are predicted from each assembly via Prodigal and are
@@ -124,3 +124,5 @@ All measurements are summarized in a HTML page in `score-assemblies-report.html`
 
 ### Example report
 ![Example report](example/example-report.png?raw=true)
+
+
