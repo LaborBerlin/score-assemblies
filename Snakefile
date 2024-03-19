@@ -337,7 +337,7 @@ rule busco2tsv:
     output:
         out_dir + "/busco/{id}/short_summary.specific.{busco_lineage}_odb10.{id}.tsv",
     shell:
-        """
+        r"""
         perl -lne 'print "{wildcards.id}\t$1\t$2\t$3\t$4" if /C:([\-\d\.]+).*F:([\-\d\.]+).*M:([\-\d\.]+).*n:(\d+)/' {input} > {output}
         """
 
@@ -401,7 +401,7 @@ rule dnadiff:
     params:
         out_dir=out_dir,
     shell:
-        """
+        r"""
         perl $CONDA_PREFIX/bin/dnadiff -p {params.out_dir}/dnadiff/{wildcards.ref}/{wildcards.id}-dnadiff {input.reference} {input.assembly} >{log} 2>&1
         cat {output.dnadiff_report} | grep -A3 '1-to-1' | grep 'AvgIdentity' | sed -e 's/^/{wildcards.id}\t{wildcards.ref}\t/' | perl -lpne 's/\s+/\t/g' > {output.stats_tsv}
         grep TotalIndels {output.dnadiff_report} | sed -e 's/^/{wildcards.id}\t{wildcards.ref}\t/' | perl -lpne 's/\s+/\t/g' >> {output.stats_tsv}
@@ -441,7 +441,7 @@ rule nucdiff:
     benchmark:
         benchmark_dir + "/nucdiff/{ref}/{id}.txt"
     shell:
-        """
+        r"""
         nucdiff {input.reference} {input.assembly} {params.nucdiff_dir} nucdiff >{log} 2>&1
         cat {output.nucdiff_stat} | grep 'Insertions\|Deletions\|Substitutions' | sed -e 's/^/{wildcards.id}\t{wildcards.ref}\t/' > {output.nucdiff_tsv}
         """
