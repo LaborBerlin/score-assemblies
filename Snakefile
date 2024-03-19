@@ -5,9 +5,9 @@ out_dir = "score-assemblies-data"
 log_dir = "score-assemblies-data/log"
 benchmark_dir = "score-assemblies-data/benchmark"
 
-# this would be nice, but it always causes a re-run of the rule, see https://github.com/snakemake/snakemake/issues/1805
-# report_rmd = workflow.source_path("scripts/report.Rmd")
-report_rmd = Path(workflow.basedir) / "scripts/report.Rmd"
+# use of workflow.source_path always triggers a re-run of the rule, see https://github.com/snakemake/snakemake/issues/1805, unlike workflow.basedir
+# but is needed when importing this Snakefile from ont-assembly-snake
+report_rmd = workflow.source_path("scripts/report.Rmd")
 
 workflow.global_resources["wget_busco"] = 1
 
