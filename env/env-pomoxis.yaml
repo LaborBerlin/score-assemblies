@@ -3,5 +3,6 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - bioconda::pomoxis=0.3.11
-  - pandas=1.5.3
+  - bioconda::pomoxis=0.3.15
+  - pandas~=2.2
+  - bioconda::minimap2=2.26
