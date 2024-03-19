@@ -5,7 +5,9 @@ out_dir = "score-assemblies-data"
 log_dir = "score-assemblies-data/log"
 benchmark_dir = "score-assemblies-data/benchmark"
 
-report_rmd = workflow.source_path("scripts/report.Rmd")
+# this would be nice, but it always causes a re-run of the rule, see https://github.com/snakemake/snakemake/issues/1805
+# report_rmd = workflow.source_path("scripts/report.Rmd")
+report_rmd = Path(workflow.basedir) / "scripts/report.Rmd"
 
 workflow.global_resources["wget_busco"] = 1
 
@@ -14,12 +16,12 @@ run_bakta = config.get("bakta", "0")
 
 
 wildcard_constraints:
-    id="[^/\\\\]+",
-    ref="[^/\\\\]+",
+    id=r"[^/\\]+",
+    ref=r"[^/\\]+",
 
 
-(references,) = glob_wildcards("references/{ref,[^/\\\\]+}.fa")
-(references_protein,) = glob_wildcards("references-protein/{ref,[^/\\\\]+}.faa")
+(references,) = glob_wildcards(r"references/{ref,[^/\\]+}.fa")
+(references_protein,) = glob_wildcards(r"references-protein/{ref,[^/\\]+}.faa")
 
 # test if run via ont-assembly-snake, then look for folder and not .fa files
 if config.get("run_score_assemblies", False):
@@ -27,7 +29,7 @@ if config.get("run_score_assemblies", False):
     if config.get("assemblies", False):
         assemblies = list(set(config["assemblies"]))
     else:
-        (assemblies,) = glob_wildcards("assemblies/{id,[^\\./\\\\]+}")
+        (assemblies,) = glob_wildcards(r"assemblies/{id,[^\./\\]+}")
     # extend proovframe and homopolish assembly names with references
     extended_list = []
     for a in assemblies:
@@ -44,7 +46,7 @@ if config.get("run_score_assemblies", False):
         if not a.endswith("homopolish") and not a.endswith("proovframe")
     ]
 else:
-    (assemblies,) = glob_wildcards("assemblies/{id,[^/\\\\]+}.fa")
+    (assemblies,) = glob_wildcards(r"assemblies/{id,[^/\\]+}.fa")
 
     if len(assemblies) == 0:
         print("Found no *.fa files in folder assemblies/")
@@ -52,8 +54,8 @@ else:
 
 assemblies_fa = expand("assemblies/{id}.fa", id=assemblies)
 
-(references,) = glob_wildcards("references/{ref,[^/\\\\]+}.fa")
-(references_protein,) = glob_wildcards("references-protein/{ref,[^/\\\\]+}.faa")
+(references,) = glob_wildcards(r"references/{ref,[^/\\]+}.fa")
+(references_protein,) = glob_wildcards(r"references-protein/{ref,[^/\\]+}.faa")
 
 list_assess_assembly_summ = []
 list_assess_assembly_meanQ_tsv = []
