@@ -127,3 +127,7 @@ All measurements are summarized in a HTML page in `score-assemblies-report.html`
 ![Example report](example/example-report.png?raw=true)
 
 
+## License
+
+The code is licensed under MIT-License before release v1.3 and GPL 3.0 (or later) from release v1.3.
+
