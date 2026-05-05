@@ -17,7 +17,7 @@ Following programs are included in the workflow:
 ## Installation
 Clone repository, for example:
 ```
-git clone https://github.com/pmenzel/score-assemblies.git /opt/software/score-assemblies
+git clone https://github.com/LaborBerlin/score-assemblies.git /opt/software/score-assemblies
 ```
 Create a new conda environment containing all necessary programs:
 ```
@@ -53,7 +53,7 @@ For example:
 ```
 NB: The assembly and reference FASTA files need to have the `.fa` extension and protein reference FASTA files need to have the extension `.faa`.
 
-This is the same folder structure used by [ont-assembly-snake](https://github.com/pmenzel/ont-assembly-snake), i.e. score-assemblies can be run directly in the same folder.
+This is the same folder structure used by [ont-assembly-snake](https://github.com/LaborBerlin/ont-assembly-snake), i.e. score-assemblies can be run directly in the same folder.
 
 To run the workflow, e.g. with 20 threads, use this command:
 ```
